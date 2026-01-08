@@ -1,12 +1,19 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
 \usepackage{graphicx}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{cite}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{comment}
+
+
+%texcount -tex -sum \jobname.tex 
 
 % \geometry{margin=1in}
 
@@ -17,32 +24,193 @@
 \begin{document}
 
 \maketitle
+\renewcommand*\contentsname{Summary}
+\tableofcontents
+\newpage
 
+\begin{comment}
 \begin{abstract}
 This document presents a bibliographic study on [Topic]. The aim is to provide an overview of the current state of research, highlight key findings, and identify potential areas for further investigation.
+
+Grandes idées : 
+- Définition commu énergétique locale
+- Objectif des LEC 
+- Sujets traités dans la littérature 
+- gains financiers et répartition équitable
+    - Méthode d'optimization
+    - Tarification dynamique
+    - Fairness index et répartition
+    - Explicabilités des choix
+- Impact sur le réseau électrique
+    - Flexibilité et gestion de la demande
+    - impact sur stabilité interne
+    - Impact sur la stabilité du réseau global (peut être ça qu'il faut que je regarde un peu plus)
+- Aspect sociaux 
+    - Engagement communautaire
+    - Acceptation sociale
+    - Bénéfices non financiers
 \end{abstract}
+\end{comment}
 
 \section{Introduction}
-Introduce the topic of the study, its importance, and the objectives of the bibliographic review.
 
-\section{Background}
-Provide background information and context for the topic. Include definitions, historical developments, and foundational concepts.
 
-\section{Literature Review}
-\subsection{Key Studies}
-Summarize and discuss the most important studies in the field.
+\subsection{Context}
+%\textcolor{red}{a. Presentation of the big issues around energy tranasition : decentralized vs centralized production. Great surfaces usable for solar in cities for exemple.}
 
-\subsection{Trends and Themes}
-Identify and analyze common trends, themes, or methodologies in the literature.
+We are now well aware that we need to significantly decrease our greenhouse gas emissions to limit global warming. Electrifying as many sectors as possible and decarbonizing electricity production are two major ways to achieve this goal. However, the renewable energy sources that can be used to produce clean electricity, such as solar and wind power, are intermittent and need a lot more space than traditional power plants. This leads to a growing interest in decentralized electricity production as it can spread the production over a larger area in order to reduce the intermittency issues as well as to take advantage of the many available surfaces. For example, urban areas have a lot of unused surfaces that could be used to install solar panels, such as rooftops and facades of buildings.
 
-\subsection{Gaps in Research}
-Highlight areas where research is lacking or where further investigation is needed.
+%\textcolor{red}{b. Introduction of prosumers in the network, then introduction to LECs as a way to organize prosumers and maximize self consumption.}
 
-\section{Discussion}
-Discuss the implications of the findings from the literature review. Relate them to the broader context of the field.
+By installing renewable energy sources at home or in local areas, in particular solar panels, a former consumer can become "prosumers", meaning that they consume and produce electricity regarding the grid. We can then distinguish two cases of production, either the prosumer inject power into the grid, or the consumer self-consumes the produced power. Depending on the politics and the grid fees, self-consumption is often a lot more interesting for prosumers than injecting power into the grid. 
+
+To maximize self-consumption, we can often think about two mains ways. The first one is to install energy storage systems in order to store the excess production for later use. However, storage systems are still quite expensive. The second way is to adapt the consumption to the production. But this can be hard to do at the individual level. This is where local energy communities (LECs) can be useful. By grouping prosumers together, they can share their production and consumption, and thus maximize self-consumption at the community level. Of course, LECs can also profit from storage systems. When the community is build using only renewable energy sources and storage systems, we can talk about a "renewable energy community" (REC).
+
+\subsection{Local energy communities}
+
+%\textcolor{red}{c. Definition of LECs, in Europe and in France. Principals problematics : financial gains, impact on the grid, social acceptance. + small state of developpment of LECs in the world.}
+
+This study will focus on LECs and more particularly on RECs in Europe as this notion depends a lot on the local regulations. Of course, LECs still exist in a lot of other regions in the world and the problems they face should be quite similar.
+
+%cite {article 10 + EU directive}
+
+Energy communities were introduced in the EU in 2016 under the “Clean Energy Package,” particularly the “Renewable Energy Directive” (REDII), and have since grown significantly. The adoption of legislative measures like REDII and the Directive on Common Rules for the Internal Electricity Market (EMDII) provided the first formal definitions of energy communities in European law. RECs typically connect to public energy networks, operated by local DSOs, but the 2019/944/CE Directive promotes closed distribution systems (CDSs). Those are intended for the use of REC members only and are expected to play the role of organizing the exchanges inside the REC. The European directive does not restrict how RECs may distribute profits among the participants and so this would also be the role of the CDSs. 
+
+In most European countries, energy communities are limited in space and number of participants, the logic being that they should be connected to the same feeder. There can still be a lot of diversity in the size of energy communities, from a few households in low voltage to industrial parks in medium voltage. 
+
+The main goal of RECs is to involve the community in the energy transition. So social acceptance and community engagement are very important aspects to consider in order for RECs to be successful. Usually, the first objective of RECs are to maximize the profit of their members. This can be done through optimization processes. This optimization will lead to a financial gain for the community that should then be spread among the members of the RECs. Several methods can be used to do so but they might not be equally fair for all members. Another important aspect to consider is the impact of the REC on the electrical grid. By adapting their consumption to their production, RECs can provide flexibility to the grid and help manage demand. However, they could also create stability issues if not properly managed.
+
+\subsection{Organisation of the bibliographic study}
+%\textcolor{red}{dbis. Maybe small presentation of the methodology and article used in the bibliographic study.}
+
+%\textcolor{red}{d. Organisation of the document : financial gains and equitable repartition. Impact on the grid and finally social aspects.}
+
+The goal of this document is to provide an overview of the current state of the art regarding renewable energy communities. The document is organized into three main sections. The first section focuses on the works related to financial gains and equitable distribution among the members of the community. The second section discusses the impact of RECs on the electrical grid, including flexibility and stability issues. Finally, the third section addresses more specifically the social dimensions of RECs, such as community engagement and social acceptance.
+
+\section{Optimization and equitable distribution}
+
+In this section, the methods to maximize the financial gains and ecological benefits of RECs will be discussed. Then, the different ways to distribute the gains among the members of the community will be presented.
+\subsection{Presentation of the optimization problems}
+
+In a REC, there are some usual common parameters. Each member of the community have its own consumption and production profile. Furthermore, some members can have a battery storage system. And as we often want to optimize the self-consumption, the members have a certain number of flexible loads with different kind of flexibility. 
+
+For members that are small consumers at the low voltage level, we can identify different types of standard flexible loads.In \cite{article_6}, the considered flexibilities are of three types : 
+\begin{itemize}
+    \item{White goods (washing machine, dryer, dishwasher...) with a fixed time of use but flexible starting time}
+    \item {Electric vehicle with a charging power that can be controlled but with constraint on the state of charge at departure time}
+    \item {Thermal loads that are fully flexible loads}
+\end{itemize}
+In \cite{article_6}, the way the different flexibilities are managed is associated with a discomfort price in the objective function.
+\cite{article_7} consider two main categories of flexible loads : shiftable loads and sheddable loads. Shiftable load are the same as white goods while sheddable loads can be reduced in power for a certain amount of time. So in the previous example, thermal loads and electric vehicles can be considered as sheddable loads.
+Finally, in \cite{these_sorel}, they modelize loads in a house for four categories to construct optimization models : 
+\begin{itemize}
+    \item {Non-flexible loads, they profile is fixed and cannot be changed}
+    \item {Shiftable loads, as mentioned before}
+    \item {All or nothing loads, that can be turned on or off at any time}
+    \item {Electric vehicle loads, here they are considered "All or nothing" when they are at home}
+\end{itemize}
+By considering all of these flexible loads model it is possible to build optimization models that take into account all the different flexibilities of the members of the REC.
+
+From here on, several parameters can be optimized depending on the goals of the REC. Usually, the cost is minimized as in \cite{article_1, article_8, these_celik}, a discomfort cost as in \cite{article_6} can also be added to the objective function. In \cite{article_5}, the goal is to maximize the robustness of a community that would be disconnected from the main grid. Finally, the ecological impact can also be minimized as in \cite{these_sorel} by minimizing the CO2 emissions associated with the electricity consumption of the community.
+
+In the case where the REC is disconnected from the main grid, what is studied is the operability of the community regarding the uncertainties of production and consumption. \cite{article_3, article_5} both uses robust optimization with a min-max-min approach to ensure the operability of the community in the worst-case scenario. 
+
+In the most common case where the REC is connected to the main grid, several approaches can be used in order to optimize the parameters of the community. In \cite{article_6, article_1, } a centralized approach is considered. This means that a central entity has access to all the data of the community and can optimize the parameters for the whole community. Of course, this will reach the best case scenario as all the information is available. However, this can lead to privacy issues. 
+
+To avoid this, \cite{these_celik} proposes different approaches with different levels of data communication. The first approach is the fully centralized one. Then they propose a method where the aggregator communicates the prices to the agents, then the agents propose a first optimal strategy to communicate their surplus and deficits to the aggregator. And then  a loop is initiated between the agents and the aggregator until convergence in order to optimize the battery usage. Finally, a fully decentralized, named "selfish", approach is proposed.
+% A revérfier fort 
+
+
+\subsection{Distribution methods within the community}
+
+With the optimization process, the REC can achieve an optimal planning strategy for exchanging energy within the community and with the main grid. This strategy will lead to overall financial gains for the community. In order to distribute these gains, a common way is to use pricing mechanisms that will determine the price of energy exchanged within the community. \cite{article_1} list 2 common methods using this principle. 
+
+\subsubsection{Mid-market rate (MMR)}
+
+The MMR pricing strategy is an average price between
+the time-of-use and the feed-in tariff. So at each instant we distinguish 3 cases. 
+
+Production of agent \texttt{i} is greater than its consumption, and the total community balance is positive, then : 
+\begin{equation}
+    price_{i} = p_{mid} = \frac{p_{buy}+p_{sell}}{2} \nonumber
+\end{equation}
+Where $p_{buy}$ and $p_{sell}$ are respectively the price to buy from the grid and the price to sell to the grid.
+
+Production of agent \texttt{i} is less than its consumption, and the total community balance is positive, then : 
+
+\begin{equation}
+    price_{i} = \frac{p_{mid} \cdot \sum_{i}{P_{prod_i}} + p_{buy} \cdot |\sum_{i}{P_{cons_i} - P_{prod_i}|}}{\sum_i{P_{cons_i}}} \nonumber
+\end{equation}
+Where $P_{prod_i}$ and $P_{cons_i}$ are respectively the production and consumption of agent \texttt{i}.
+
+Production of agent \texttt{i} is less than its consumption, and the total community balance is negative, then :
+\begin{equation}
+    price_{i} = \frac{p_{mid} \cdot \sum_{i}{P_{prod_i}} + p_{sell} \cdot |\sum_{i}{P_{cons_i} - P_{prod_i}}|}{\sum_i{P_{cons_i}}} \nonumber
+\end{equation}
+
+\subsubsection{Supply-demand rate (SDR)}
+
+The SDR pricing strategy sets the internal community price according to a ratio between the community net generation and net demand. At each instant, we have :
+
+\begin{eqnarray}
+    rate =& \frac{\sum_i{P_{prod_i}}}{\sum_i{P_{cons_i}}} \nonumber \\
+    price =& \begin{cases}
+        p_{sell} & \text{if } rate > 1 \\
+        p_{buy} & \text{if } rate=0 \\
+        p_{sell} rate + (1- rate) & \text{if } 0 < rate \leq 1    
+    \end{cases} \nonumber 
+\end{eqnarray}
+
+\subsubsection{Shapley value}
+
+Another way of looking at this distribution problem is to use cooperative game theory. In \cite{article_1}, they propose 2 other methods based on game-theoretic approaches. The Shapley value and the Nucleolus. 
+
+Those two methods uses the principle of coalitions between agents. A coalition S is a subset of N, the set of all agents. The value of a coalition S is given by a characteristic function v(S) that gives the total profit of the coalition S. The Shapley value is then defined as follows for an agent \texttt{i} :
+
+\begin{equation}
+    \phi_i (v) = \sum_{S \subseteq N \setminus \{i\}}{\frac{|S|! (|N|-|S|-1)!}{|N|!} [v(S \cup \{i\}) - v(S)]} \nonumber
+\end{equation}
+
+This method is considered to be fair as it takes into account the marginal contribution of each agent to all possible coalitions. However, it can be quite complex to compute as the computation time grows exponentially with the number of agents.
+
+\subsubsection{Nucleolus}
+
+The nucleolus of a cooperative game is the solution that maximizes the smallest excess of a coalition. The excess of a coalition S for a given allocation x is defined as :
+\begin{equation}
+    e(S,x) = v(S) - \sum_{i \in S}{x_i} \nonumber
+\end{equation}
+So the nucleolus can be obtained by solving a serie of linear programming problems that minimize the maximum excess of all coalitions. It is also often simplified using only the prenucleolus, as the nucleolus is quite heavy to compute.
+
+\subsection{Fairness indices and equitable distribution}
+
+The shapley value and the nucleolus are two methods that aim to provide a fair distribution of the gains among the members of the community. However, there are several ways to define fairness. In \cite{article_1, }, they propose 4 different fairness indices to evaluate the fairness of a distribution method. Indeed, fairness can be defined in different ways, and depending on the way it is defined, the metrics to evaluate it should be different.
+% lister les 4 indices
+
+\subsection{Explainability of algorithms}
+
+In order to optimize the operation of a REC and distribute the gains among its members, several algorithms can be used. Those will result in decisions that will impact the members of the community. It is therefore important that those decisions are explainable and understandable by the members. This is particularly true when metaheuristic algorithms are used as they are not proven to converge toward the optimal solution. In \cite{XAI}, they propose a review on the different ways to make those algorithms more explainable and to justify that they will converge toward a good solution.
+
+% Ajouter 2 trois exemples de ce que je viens de dire.
+
+\section{Impact on the electrical grid}
+\subsection{Flexibility and demand-side management}
+
+% Brief explanation on how flexibility could help the grid (article 10)
+
+\subsection{Impact on internal stability of the community}
+% Ici on parle de la robust optimization et des deux articles (dont un qu'il faut que je lise encore)
+
+\subsection{Impact on overall grid stability}
+% article 10 encore
+
+\section{Social Dimensions}
+\subsection{Community engagement}
+% serious game et profile sociologique
+
+\subsection{Social acceptance}
+% revenir sur pas mal de chose qu'on a dit 
 
 \section{Conclusion}
-Summarize the main points of the study and suggest directions for future research.
 
 \bibliographystyle{plain}
 \bibliography{references}
