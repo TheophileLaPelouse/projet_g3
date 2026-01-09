@@ -1,5 +1,4 @@
-\documentclass[10pt,a4paper]{article}
-
+\documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
@@ -11,7 +10,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{comment}
-
+\geometry{margin=0.75in}
 
 %texcount -tex -sum \jobname.tex 
 
@@ -24,7 +23,9 @@
 \begin{document}
 
 \maketitle
+\newpage
 \renewcommand*\contentsname{Summary}
+\setcounter{tocdepth}{2}
 \tableofcontents
 \newpage
 
@@ -91,6 +92,7 @@ The goal of this document is to provide an overview of the current state of the 
 
 In this section, the methods to maximize the financial gains and ecological benefits of RECs will be discussed. Then, the different ways to distribute the gains among the members of the community will be presented.
 \subsection{Presentation of the optimization problems}
+\label{section_optimization}
 
 In a REC, there are some usual common parameters. Each member of the community have its own consumption and production profile. Furthermore, some members can have a battery storage system. And as we often want to optimize the self-consumption, the members have a certain number of flexible loads with different kind of flexibility. 
 
@@ -101,7 +103,7 @@ For members that are small consumers at the low voltage level, we can identify d
     \item {Thermal loads that are fully flexible loads}
 \end{itemize}
 In \cite{article_6}, the way the different flexibilities are managed is associated with a discomfort price in the objective function.
-\cite{article_7} consider two main categories of flexible loads : shiftable loads and sheddable loads. Shiftable load are the same as white goods while sheddable loads can be reduced in power for a certain amount of time. So in the previous example, thermal loads and electric vehicles can be considered as sheddable loads.
+\cite{article_9} consider two main categories of flexible loads : shiftable loads and sheddable loads. Shiftable load are the same as white goods while sheddable loads can be reduced in power for a certain amount of time. So in the previous example, thermal loads and electric vehicles can be considered as sheddable loads.
 Finally, in \cite{these_sorel}, they modelize loads in a house for four categories to construct optimization models : 
 \begin{itemize}
     \item {Non-flexible loads, they profile is fixed and cannot be changed}
@@ -111,9 +113,9 @@ Finally, in \cite{these_sorel}, they modelize loads in a house for four categori
 \end{itemize}
 By considering all of these flexible loads model it is possible to build optimization models that take into account all the different flexibilities of the members of the REC.
 
-From here on, several parameters can be optimized depending on the goals of the REC. Usually, the cost is minimized as in \cite{article_1, article_8, these_celik}, a discomfort cost as in \cite{article_6} can also be added to the objective function. In \cite{article_5}, the goal is to maximize the robustness of a community that would be disconnected from the main grid. Finally, the ecological impact can also be minimized as in \cite{these_sorel} by minimizing the CO2 emissions associated with the electricity consumption of the community.
+From here on, several parameters can be optimized depending on the goals of the REC. Usually, the cost is minimized as in \cite{article_1, article_7, these_celik}, a discomfort cost as in \cite{article_6} can also be added to the objective function. In \cite{article_5}, the goal is to maximize the robustness of a community that would be disconnected from the main grid. Finally, the ecological impact can also be minimized as in \cite{these_sorel} by minimizing the CO2 emissions associated with the electricity consumption of the community. In \cite{article_7}, they propose a model that take into account demand response requests from the distribution system operator (DSO) in order to provide services to the grid.
 
-In the case where the REC is disconnected from the main grid, what is studied is the operability of the community regarding the uncertainties of production and consumption. \cite{article_3, article_5} both uses robust optimization with a min-max-min approach to ensure the operability of the community in the worst-case scenario. 
+In the case where the REC is disconnected from the main grid, what is studied is the operability of the community regarding the uncertainties of production and consumption. \cite{article_3, article_5} both uses robust optimization with a min-max-min approach to ensure the operability of the community in the worst-case scenario.
 
 In the most common case where the REC is connected to the main grid, several approaches can be used in order to optimize the parameters of the community. In \cite{article_6, article_1, } a centralized approach is considered. This means that a central entity has access to all the data of the community and can optimize the parameters for the whole community. Of course, this will reach the best case scenario as all the information is available. However, this can lead to privacy issues. 
 
@@ -161,6 +163,28 @@ The SDR pricing strategy sets the internal community price according to a ratio 
     \end{cases} \nonumber 
 \end{eqnarray}
 
+\subsubsection{Peer-to-peer transactions}
+
+In \cite{these_new}, they propose a peer-to-peer pricing mechanism where agents can build bilateral contracts with each other to trade energy. The price of energy is determined by a market mechanism where agents can propose bids and offers and agents are paired randomly.
+
+Another way of distributing the gains within the community is to only distribute the total profit of the community without using pricing mechanisms. Different methods can be used to do so \cite{these_new, article_1}.
+
+\subsubsection{Equal Allocation of Non-Separable Values (EANSV)}
+
+This method is based on comparing the individual initial cost without being part of the community and the collective cost of the community. For this it determines the non-separable values that are the values could not be attributed to a single agent. So this method attribute as a cost to each agent its separable cost plus an equal share of the non-separable cost. It can be expressed as follows for an agent \texttt{i} :
+\begin{equation}
+    C_i^{EANSV} = C_i^{ind} + \frac{C_{community} - \sum_{i}{C_i^{ind}}}{N} \nonumber
+\end{equation}
+Where $C_i^{ind}$ is the individual cost of agent \texttt{i} without being part of the community, $C_{community}$ is the total cost of the community and N is the number of agents in the community.
+
+\subsubsection{Proportional Allocation (PA)}
+This method consist of distributing an equal proportional saving to each agent. It can be expressed as follows for an agent \texttt{i} :
+\begin{equation}
+    C_i^{PA} = C_i^{ind} + \frac{|C_i^{ind}|}{\sum_{i}{|C_i^{ind}|}} (C_{community} - \sum_{i}{C_i^{ind}}) \nonumber
+\end{equation}
+
+
+
 \subsubsection{Shapley value}
 
 Another way of looking at this distribution problem is to use cooperative game theory. In \cite{article_1}, they propose 2 other methods based on game-theoretic approaches. The Shapley value and the Nucleolus. 
@@ -181,34 +205,120 @@ The nucleolus of a cooperative game is the solution that maximizes the smallest 
 \end{equation}
 So the nucleolus can be obtained by solving a serie of linear programming problems that minimize the maximum excess of all coalitions. It is also often simplified using only the prenucleolus, as the nucleolus is quite heavy to compute.
 
-\subsection{Fairness indices and equitable distribution}
+\subsubsection{Other methods}
 
-The shapley value and the nucleolus are two methods that aim to provide a fair distribution of the gains among the members of the community. However, there are several ways to define fairness. In \cite{article_1, }, they propose 4 different fairness indices to evaluate the fairness of a distribution method. Indeed, fairness can be defined in different ways, and depending on the way it is defined, the metrics to evaluate it should be different.
-% lister les 4 indices
+Other methods have been proposed such as optimization based distribution. Those can be used to propose strategies that answer specific needs of the community. For example, in \cite{these_new}, they propose an optimization framework that aims to take into account the individual preferences of the agents regarding their engagement in the community for ecological purposes.
 
-\subsection{Explainability of algorithms}
+Dynamic pricing mechanisms using bids and offers can also be used to determine the price of energy exchanged within the community. In this case, several bids strategies can be used.
 
-In order to optimize the operation of a REC and distribute the gains among its members, several algorithms can be used. Those will result in decisions that will impact the members of the community. It is therefore important that those decisions are explainable and understandable by the members. This is particularly true when metaheuristic algorithms are used as they are not proven to converge toward the optimal solution. In \cite{XAI}, they propose a review on the different ways to make those algorithms more explainable and to justify that they will converge toward a good solution.
+\subsection{Fairness indexes and equitable distribution}
+\label{section-index}
 
+The shapley value and the nucleolus are two methods that aim to provide a fair distribution of the gains among the members of the community. However, there are several ways to define fairness. In \cite{article_1, these_new, article_8}, they identify different fairness index to evaluate the fairness of a distribution method. 
+
+\subsubsection{Jain's index}
+Jain's index is one of the most common fairness index. It measures the equality of the distribution and is defined as follows :
+\begin{equation}
+    J(x) = \frac{(\sum_{i=1}^{N}{x_i})^2}{N \cdot \sum_{i=1}^{N}{x_i^2}} \nonumber
+\end{equation}
+Where x is the vector of allocations to each agent. The index ranges from 1/N (worst case) to 1 (best case).
+
+\subsubsection{Participation index}
+The participation index measures the proportion of agents that benefit from the community. It is defined as follows :
+\begin{equation}
+    PI(x) = \frac{N_{CostReduced}}{N} \nonumber
+\end{equation}
+Where $N_{CostReduced}$ is the number of agents that have a lower cost being part of the community than being alone.
+
+This index can be used to make sure that the distribution method does not disadvantage too many participants.
+\subsubsection{MinMax index}
+The MinMax index measures the ratio between the maximum and minimum allocation among the agents. It aims to evaluate the equality of the distribution in the same way as Jain's index. It is defined as follows :
+\begin{equation}
+    MM(x) = \frac{min_i{x_i}}{max_i{x_i}} \nonumber
+\end{equation}
+
+\subsubsection{Quality of Experience (QoE) index}
+This index compare the standard deviation to its maximum possible value. So the aim is still the same as for the Jain's and MinMax index. It is defined as follows :
+\begin{equation}
+    QoE(x) = 1 - \frac{\sigma(x)}{max(x_i) - min(x_i)} \nonumber
+\end{equation}
+
+\subsubsection{Comparison to Shapley value}
+The last index measure the difference between the obtained allocation and the Shapley value allocation. It is defined as follows :
+\begin{equation}
+    \Delta = 1 - \sum_{i=1}^{N}{\frac{x_i}{\sum_{k=1}^{N}x_k} - \frac{x_i^{SV}}{\sum_{k=1}^{N}{x_k^{SV}}}} \nonumber
+\end{equation}
+Where $x^{SV}$ is the allocation given by the Shapley value method. The Shapley value is deemed as fair as it calculates the marginal contribution of each agent to all possible coalitions.
 % Ajouter 2 trois exemples de ce que je viens de dire.
 
+Using those different fairness indices, it is possible to evaluate the fairness of a distribution method within a community. This can help choose the most suitable method for a given community depending on its priorities.
+
+
+
 \section{Impact on the electrical grid}
+
 \subsection{Flexibility and demand-side management}
 
 % Brief explanation on how flexibility could help the grid (article 10)
 
+Flexibilities on the consumer side can help the grid for its stability. Thus, there is now more and more incentives using tariffs for consumers to provide flexibility to the grid. In RECs, those flexibilities are even more important. As the goal of RECs is to maximize self-consumption, and the renewable energy sources, mainly solar panels, have a high variability in their production, it is important to be able to adapt the consumption to the production. This is even more true when the REC is supposed to work in islanded mode.
+
+One could think that this flexibility of the RECs could help the grid by providing demand-side management services. However, in \cite{article_10}, they show that the impact of RECs on the grid is not always positive. A bad management of the REC could lead to production peaks and to congestions on the grid. Thus, it is important to properly manage the flexibilities of the REC in order to provide services to the grid and not to destabilize it.
+
+The type of flexibility has been listed in section \ref{section_optimization}. 
+
 \subsection{Impact on internal stability of the community}
 % Ici on parle de la robust optimization et des deux articles (dont un qu'il faut que je lise encore)
+In \cite{article_5}, they study the operability of a REC that would be disconnected from the main grid in order to study stability in the worst case scenario. Using a robust optimization approach, the amount of flexibility of each user is specified by each agent and taken into account as a constraint in the optimization problem. With this method, they show that it is possible to ensure the operability of the REC in the worst case scenario, even if this leads to a higher cost for the community.
+
+They also studied their optimization method without being in island mode. In this case, they show that it reduces the costs while optimizing the use of local renewable energy sources. So there is a trade-off to find between ensuring the stability of the REC and minimizing the costs.
 
 \subsection{Impact on overall grid stability}
 % article 10 encore
+In \cite{article_10}, they study the impact of RECs on the overall grid stability. They compare two scenarios. In the first one the prosumers are not organized within a REC, while in the second one they are, and their exchanges are optimized to maximize self-consumption. In each case, the number of flexibilities remain the same.
+
+They show that for some days, the REC can help to reduce the voltage deviations. But for other days, it is the opposite. The REC can create voltage deviations that were not present in the first scenario and at times when it is not classically expected. The authors specify that this is mostly true when the RECs are not served by the same feeders or if they are located at a low or medium voltage node in the grid. So the way RECs are built and operated can have a significant impact on the overall grid stability.
+
+In \cite{article_7}, they model a REC where the DSO can send demand response requests (DR) to the REC in order to provide services to the grid. The DR requests are associated with a time horizon and a reward. With the rewards fixed as in their study, they show that the REC can provide services to the grid in order to maximize its profit. Hence, the DSO could use DR requests to ensure the stability of the grid.
 
 \section{Social Dimensions}
 \subsection{Community engagement}
 % serious game et profile sociologique
+% Parler aussi de différente métrique d'assessment avec self sufficiency, co2 et prix
+
+One of the objective of RECs as defined by the European Union is to involve the community in their energy management and in the energy transition. In a more concrete manner, this engagement is meant to provide the needed flexibilities for the community as well as the investment such as PV panels and battery storage. Thus, community engagement is a very important aspect to consider in order for RECs to be successful. \cite{these_sorel} describes 3 main sociological profiles regarding the engagement in a REC :
+\begin{itemize}
+    \item {The "environmentalist" profile, they are motivated by ecological concerns}
+    \item {The "economic" profile, they are motivated by financial gains}
+    \item {The "independent" profile, they are motivated by the idea of being autonomous regarding energy}
+\end{itemize}
+Each member of the community can share more or less one of these profiles. In order to engage the community, it is important to take into account those different profiles while operating the REC. For example, some members might be more willing to accept a higher cost if it leads to a lower ecological impact.
+
+Taking this into account, the optimization process can be adapted using different metrics as objectives. In \cite{these_sorel}, they consider for example self-consumption rate, CO2 emissions and cost as metrics to optimize. The fairness index presented previously are also important to consider depending on the profiles of the members of the community.
+
+\cite{article_9} developed a serious game in order to study the flexibility of individuals in a REC. The participants are separated into 4 groups, one with community, another without and with or without peer-to-peer (P2P) pressure. Throughout the game, each participant will have the choice to accept or not load shifting and load shedding. The study lasted for 2 weeks, in the first week, there is not too much incentive from the game to accept flexibility. In the second week, a score is now given to each participant.
+
+Between the participant in a community with P2P pressure and the participant alone without P2P pressure, there is a 58\% increase in acceptance of the suggested flexibility. But this study concludes that being part in a community and having P2P pressure is the only way to significantly increase the acceptance of flexibilities.
 
 \subsection{Social acceptance}
 % revenir sur pas mal de chose qu'on a dit 
+\cite{article_8} presents a review of the literature on the fairness in local energy systems. They show that fairness withing a community is a key factor in order to put in place systems such as RECs. Furthermore, the concept of fairness is quite subjective and vary depending on the studies that want to take it into account.
+
+They identify 3 main dimensions of fairness : 
+\begin{itemize}
+    \item {Equality, each participant should receive the same amount of benefits}
+    \item {Min-max fairness, the allocation should maximize the minimum benefit received by a participant}
+    \item {Meritocracy, the allocation should be proportional to the contribution of each participant}
+\end{itemize}
+
+Looking back at the different distribution methods presented previously, the rule based methods such as pricing mechanisms focus on meritocracy. While the redistribution methods can choose more to focus on the aspect they want to prioritize. Then the different indexes seen in \ref{section-index} can be used in order to check the fairness of the final distribution.
+
+As mentioned in \cite{these_new}, some of the distribution method presented can be quite hard to understand for an average member of a community. This problem of explainability can be a challenge that needs to be addressed for social acceptance.
+
+We could also think that this is also true for the optimization processes. Indeed, in order to optimize the operation of a REC, several algorithms can be used. Those will result in decisions that will impact the members of the community and maybe the DSO. This can be particularly important when metaheuristic algorithms are used as they are not proven to converge toward the optimal solution. In \cite{XAI}, they propose a review on the different ways to make those algorithms more explainable and to justify that they will converge toward a good solution.
+
+
+% On avait dit qu'on voulait ajouter un paragrpahe sur la répartition équitable 
 
 \section{Conclusion}
 
