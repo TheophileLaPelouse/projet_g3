@@ -1,49 +1,49 @@
 This is BibTeX, Version 0.99d (TeX Live 2024)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: etude_biblio.aux
-The style file: ieeetr.bst
+The style file: plain.bst
 Database file #1: references.bib
 Warning--I didn't find a database entry for "article_10"
 Warning--I didn't find a database entry for "XAI"
 You've used 11 entries,
-            1876 wiz_defined-function locations,
-            545 strings with 6460 characters,
-and the built_in function-call counts, 3224 in all, are:
-= -- 310
-> -- 177
-< -- 0
-+ -- 63
-- -- 52
-* -- 234
-:= -- 481
-add.period$ -- 18
+            2118 wiz_defined-function locations,
+            565 strings with 6983 characters,
+and the built_in function-call counts, 4407 in all, are:
+= -- 409
+> -- 286
+< -- 3
++ -- 112
+- -- 101
+* -- 356
+:= -- 773
+add.period$ -- 38
 call.type$ -- 11
-change.case$ -- 11
+change.case$ -- 82
 chr.to.int$ -- 0
 cite$ -- 11
-duplicate$ -- 175
-empty$ -- 246
-format.name$ -- 52
-if$ -- 771
+duplicate$ -- 144
+empty$ -- 280
+format.name$ -- 101
+if$ -- 881
 int.to.chr$ -- 0
 int.to.str$ -- 11
 missing$ -- 8
-newline$ -- 43
-num.names$ -- 13
-pop$ -- 34
+newline$ -- 62
+num.names$ -- 24
+pop$ -- 76
 preamble$ -- 1
-purify$ -- 0
+purify$ -- 71
 quote$ -- 0
-skip$ -- 134
+skip$ -- 95
 stack$ -- 0
-substring$ -- 124
-swap$ -- 87
-text.length$ -- 0
+substring$ -- 209
+swap$ -- 32
+text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 0
+type$ -- 44
 warning$ -- 0
-while$ -- 26
+while$ -- 37
 width$ -- 13
-write$ -- 118
+write$ -- 133
 (There were 2 warnings)
