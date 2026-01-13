@@ -4,26 +4,45 @@
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
 \usepackage{graphicx}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    filecolor=blue,      
+    urlcolor=blue]{hyperref}
 \usepackage{cite}
 \usepackage{xcolor}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{comment}
+% \usepackage{csquotes}
 \geometry{margin=0.75in}
+
+% \usepackage[style=numeric-comp,sorting=none]{biblatex}
+% \addbibresource{references.bib}
 
 %texcount -tex -sum \jobname.tex 
 
 % \geometry{margin=1in}
+% \title{Bibliographic Study on local energy communities}
+\title{\vspace{0cm} % Adjust vertical spacing
+    \makebox[\textwidth]{%
+        \includegraphics[height=2cm]{logo_centrale.png} \hfill
+        \includegraphics[height=2cm]{L2EP_logo.png}%
+    }\\[3cm] % Add space below the logos
+    % \sffamily % Use sans-serif font for the title
+    Modeling Flexibility Services in Energy Communities using Multi-agent systems \\
+    \makebox[\textwidth]{\rule{\textwidth}{0.4pt}}
+    \large Bibliographic project -- Master E2SD -- Projet d'intégration G3 Centrale Lille
+    % \rmfamily % Revert to serif font after the title
+}
 
-\title{Bibliographic Study on local energy communities}
-\author{Théophile Mounier}
+\author{\textbf{Théophile Mounier}}
 \date{}
 
 \begin{document}
 
 \maketitle
-\newpage
+% \newpage
 \renewcommand*\contentsname{Summary}
 \setcounter{tocdepth}{2}
 \tableofcontents
@@ -117,7 +136,7 @@ From here on, several parameters can be optimized depending on the goals of the 
 
 In the case where the REC is disconnected from the main grid, what is studied is the operability of the community regarding the uncertainties of production and consumption. \cite{article_3, article_5} both uses robust optimization with a min-max-min approach to ensure the operability of the community in the worst-case scenario.
 
-In the most common case where the REC is connected to the main grid, several approaches can be used in order to optimize the parameters of the community. In \cite{article_6, article_1, } a centralized approach is considered. This means that a central entity has access to all the data of the community and can optimize the parameters for the whole community. Of course, this will reach the best case scenario as all the information is available. However, this can lead to privacy issues. 
+In the most common case where the REC is connected to the main grid, several approaches can be used in order to optimize the parameters of the community. In \cite{article_6, article_1} a centralized approach is considered. This means that a central entity has access to all the data of the community and can optimize the parameters for the whole community. Of course, this will reach the best case scenario as all the information is available. However, this can lead to privacy issues. 
 
 To avoid this, \cite{these_celik} proposes different approaches with different levels of data communication. The first approach is the fully centralized one. Then they propose a method where the aggregator communicates the prices to the agents, then the agents propose a first optimal strategy to communicate their surplus and deficits to the aggregator. And then  a loop is initiated between the agents and the aggregator until convergence in order to optimize the battery usage. Finally, a fully decentralized, named "selfish", approach is proposed.
 % A revérfier fort 
@@ -214,7 +233,7 @@ Dynamic pricing mechanisms using bids and offers can also be used to determine t
 \subsection{Fairness indexes and equitable distribution}
 \label{section-index}
 
-The shapley value and the nucleolus are two methods that aim to provide a fair distribution of the gains among the members of the community. However, there are several ways to define fairness. In \cite{article_1, these_new, article_8}, they identify different fairness index to evaluate the fairness of a distribution method. 
+The shapley value and the nucleolus are two methods that aim to provide a fair distribution of the gains among the members of the community. However, there are several ways to define fairness. In \cite{article_1, these_new, article_8, article_2}, they identify different fairness index to evaluate the fairness of a distribution method. 
 
 \subsubsection{Jain's index}
 Jain's index is one of the most common fairness index. It measures the equality of the distribution and is defined as follows :
@@ -322,7 +341,35 @@ We could also think that this is also true for the optimization processes. Indee
 
 \section{Conclusion}
 
-\bibliographystyle{plain}
+\subsubsection*{Key takeaways}
+
+This article presented an overview of the state of the art about the local energy communities. In Europe, a law framework around energy communities has been developed in order to encourage installation of renewable energies. These renewable power sources are often PV panels, that have a very high variability. The RECs can then be used, first to engage a community in the installation of the infrastructure, and then to optimize the usage of the energy produced.
+
+A lot of different optimization frameworks have been developed in order to optimize different quantities. The economic gain and self-consumption are often the two values that are optimized, but some article also study the CO2 emissions or the stability of the local grid the worst case scenarios. 
+
+This can be done through centralized methodology or more decentralized one. This choice can be important regarding the complexity of the used algorithms, as the more centralized the method is, the more computation it may require. But it can also have an impact on the members of the community, as a centralized method will need precise data on their every day life, which may cause privacy issues.
+
+Another key aspect of this optimization process is how the benefit from the community are distributed to the different members. A lot of different methods exist for this point as well. In the literature, we can find dynamic pricing mechanisms, distribution functions and game theoretic approaches using Shapley value and Nucleolus. We can also find optimization approaches that are more specific to the community studied. The use of one method and not another will lead to a more or less fair distribution.
+
+In order to assess the fairness of each method, different index have been presented that can be used depending on the definition of fairness one chose. Indeed, three main dimensions of fairness coexist : "equality", "min-max fairness" and "meritocracy".
+
+The choice of the optimization framework will influence greatly the operation of the community and might have an impact on the engagement of the community. That is why in this field, it is necessary to take into account a sociological aspect. Three main sociological profiles have been studied, the "environmentalist", the "economic" and the "independent". The members of a community can be modeled using these profiles. Then studying the profiles within a community, we can try to find an appropriate optimization framework.
+
+Furthermore, the way the community is optimized could influence the stability of the grid. Indeed, studies show that a REC optimized for its self-consumption can create congestions on the line depending on the way the community are built.
+
+Finally, the social engagement of the member of a community has be studied threw a serious game. The results show that peer pressure can greatly help the member to accept the usage of more flexibilities.
+\subsubsection*{Future works}
+
+Looking at the literature, it seems that there is still a lack of studies exploring the impact of the development of local communities on the electrical grid. We can think that the RECs could be a way to install local renewable power sources without affecting too much the grid, if operated properly, but this needs to be further studied.
+
+In order to study further big communities, or system of several communities, the optimization framework needs to be scalable. There are already studies exploring this aspect, but further work need to be done exploring every aspect of the optimization, from operation to fair distribution. In particular, the game-theoritic approaches are difficult to scale.
+
+Finally, all of these optimization processes are still very theoretical and lack real case application. Those case-studies would be essential in order to prove the effectiveness of the presented methodologies in order to install more renewable energies. 
+
+
+\bibliographystyle{ieeetr}
 \bibliography{references}
+
+% \printbibliography
 
 \end{document}
