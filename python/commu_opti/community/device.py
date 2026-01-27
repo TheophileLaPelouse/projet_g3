@@ -1,6 +1,4 @@
-import pyomo.environ as pyo
-from pyomo.opt import SolverFactory
-
+from . import pyo
 
 class device :
     def __init__(self, power_range, time_use, time_range, **kwargs) : 
@@ -192,14 +190,14 @@ class EV(device) :
         
         self.charge_eff = kwargs.get('charge_eff', 0.98)
         self.dcharge_eff = kwargs.get('dcharge_eff', 0.98)
-        self.E0 = kwargs.get('E0', 0.5 * (self.E_range[0] + self.E_range[1])
+        self.E0 = kwargs.get('E0', 0.5 * (self.E_range[0] + self.E_range[1]))
         self.E = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(self.E_range[0], self.E_range[1]))
         self.P_plus = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(0, self.p_range[1]))
         self.P_minus = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(0, -self.p_range[0]))
       
-        mod.E = self.E 
-        mod.P_plus = self.P_plus
-        mod.P_minus = self.P_minus
+        self.mod.E = self.E 
+        self.mod.P_plus = self.P_plus
+        self.mod.P_minus = self.P_minus
         self.generate_bat_constraint(E_end=E_end)
         
 if __name__ == '__main__' :
@@ -212,5 +210,7 @@ if __name__ == '__main__' :
     dev.mod.p_con_u.pprint()
     dev.mod.t_con_l.pprint()
     dev.mod.t_con_u.pprint()
+    
+    # Faudra tester un peu plus tout le reste mais on verra plus tard parce que flemme
     
     
