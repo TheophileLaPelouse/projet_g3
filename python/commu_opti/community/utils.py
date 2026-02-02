@@ -18,3 +18,6 @@ def calc_eco(Pgrid, Pex, deltat = 1, cost_grid=0.1, cost_ex=0) :
         + sum(Pex[k]*deltat*cost_ex for k in range(len(Pex)))
         )
 
+def calc_pena_pow(excess_l, excess_u, **pena_args) : 
+    coef = pena_args.get("coef", 1)
+    return (excess_l**2 + excess_u**2)*coef

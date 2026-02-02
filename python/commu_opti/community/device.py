@@ -126,6 +126,8 @@ class white_good(device) :
         - sum w_sk = 1 avec w_sk des binaires sur [tmin, tmax]*[0, tmax-tmin]
         
         - sum_{t<=k<=T} sum{t<=s<=t+k} p[2t - s]*w_sk pour la puissance (for all t).
+        
+        Faudra ajouter les excès de temps, mais je pense qu'il faudra se faire mal à la tête donc pour le moment on fait sans.
         """
         
         for instant in self.mod.t_set : 
@@ -163,6 +165,8 @@ class white_good(device) :
             
         self.mod.p_con_l.deactivate()
         self.mod.p_con_u.deactivate()
+        self.mod.p_excess_l.fix(0)
+        self.mod.p_excess_u.fix(0)
         return
             
         
@@ -234,6 +238,8 @@ class AoN(device) :
         
         self.mod.p_con_l.deactivate()
         self.mod.p_con_u.deactivate()
+        self.mod.p_excess_l.fix(0)
+        self.mod.p_excess_u.fix(0)
         return
 
         
@@ -258,6 +264,7 @@ class batterie(device) :
         self.mod.P_plus = self.P_plus
         self.mod.P_minus = self.P_minus
         self.generate_bat_constraint()
+        self.mod.Pbat = self.mod.Pcons
 
 class EV(device) : 
     def __init__(self, p_range, E_range, time_home, E_min, E_end, **kwargs) : 
