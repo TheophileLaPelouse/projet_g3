@@ -1,6 +1,7 @@
 from . import pyo
 from .utils import calc_auto, calc_eco, calc_enviro, calc_pena_pow, calc_confort
 from ..opti.solving import solve_model
+from ..plotting.plot_functions import plot_power_curves, plot_hexagon_objective
 import itertools
 import math
 
@@ -19,6 +20,7 @@ class community :
         self.members_id = [k for k in range(len(members))]
         self.current_members_id = [k for k in range(len(members))]
         self.total_time = kwargs.get('total_time', 24)
+        self.deltat = kwargs.get('deltat', 1)
         self.socio = [0, 0, 0, 0]
         
         self.members_obj = []
@@ -400,4 +402,10 @@ class community :
                 s += (gain_with_i - gain_without_i)/math.comb(n-1, len(comb)-1)
         return s
                 
+    def plot_power_curves(self, **kwargs) :
+        plot_power_curves(self.total_time, self.deltat, **kwargs)
+        
+    def plot_hexagon(self, values, members, title="Hexagon Plot") :
+        plot_hexagon_objective(values, members, title)
+        
         

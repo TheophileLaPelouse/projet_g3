@@ -2,6 +2,7 @@ from numpy import mod
 from . import pyo
 from .utils import calc_auto, calc_eco, calc_enviro, calc_pena_pow, calc_confort
 from ..opti.solving import solve_model
+from ..plotting.plot_functions import plot_power_curves
 
 class member : 
     def __init__(self, devices, production_profile, socio, id_, **kwargs) :
@@ -340,3 +341,6 @@ class member :
     def self_optimize(self, solver, **options) :   
         results = solve_model(self.mod_member, solver, **options)
         return results
+    
+    def plot_power_curves(self, **kwargs) :
+        plot_power_curves(self.total_time, self.deltat, **kwargs)

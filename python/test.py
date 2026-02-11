@@ -192,6 +192,18 @@ for case_name, case_params in test_cases.items():
     print(f"{case_name} test solved")
     print(f"Results : price = {pyo.value(test_member.price)}, enviro = {pyo.value(test_member.enviro)}, auto = {pyo.value(test_member.auto)}, confort = {pyo.value(test_member.confort)}")
     test_member.mod_member.write('member.lp', io_options={'symbolic_solver_labels': True})
+    
+to_plot = {
+    "powers" : {
+        "P_grid" : [pyo.value(test_member.P_grid_plus[t]-test_member.P_grid_minus[t]) for t in range(test_member.total_time)],
+        "P_bat" : [pyo.value(test_member.P_bat[t]) for t in range(test_member.total_time)],
+        "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
+        "P_exchange" : [pyo.value(test_member.P_exchange[t]) for t in range(test_member.total_time)],
+        "P_prod" : prod_profile
+    }
+}
+    
+test_member.plot_power_curves(**to_plot)
 
 #%% Community test 
 
@@ -280,19 +292,40 @@ co.mod.write('commu.lp', io_options={'symbolic_solver_labels': True})
 
 print("Optimization done \n")
 
-co.calc_gains("gurobi")
-print("Gains calculated \n")
+# co.calc_gains("gurobi")
+# print("Gains calculated \n")
 
-co.distribute_gains(method="proportional")
-print("Gains distributed proportionaly \n")
+# co.distribute_gains(method="proportional")
+# print("Gains distributed proportionaly \n")
 
-co.distribute_gains(method="equal")
-print("Gains distributed equally \n")
+# co.distribute_gains(method="equal")
+# print("Gains distributed equally \n")
 
-co.distribute_gains(method="shapley")
-print("Gains distributed with Shapley \n")
-        
+# co.distribute_gains(method="shapley")
+# print("Gains distributed with Shapley \n")
+
+
+to_plot = {
+    "powers" : {
+        "P_grid" : [pyo.value(co.mod.P_grid_plus[t]+co.mod.P_grid_minus[t]) for t in range(co.total_time)],
+        "P_bat" : [pyo.value(co.mod.P_bat[t]) for t in range(co.total_time)],
+        "P_cons" : [pyo.value(co.mod.P_cons[t]) for t in range(co.total_time)], 
+        "P_exchange" : [pyo.value(co.mod.P_commu_exchange[t]) for t in range(co.total_time)],
+    }
+}
     
+co.plot_power_curves(**to_plot)
+        
+# to_plot_hex = {
+#     "values" : {
+#         "gain shapley" : co.members_gains["shapley"],
+#         "gain proportional" : co.members_gains["proportional"],
+#         "gain equal" : co.members_gains["equal"],
+#     },
+#     "members" : [f"member {m}" for m in co.members_id],
+#     "title" : "Gains distribution comparison"
+# }
+# co.plot_hexagon(**to_plot_hex)
 
 #%% test autres
 
