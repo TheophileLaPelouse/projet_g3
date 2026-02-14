@@ -229,8 +229,40 @@ c_l_member_0_device0_p_con_l(0)_:
 +1 member_0_device0_allocated_power(0)
 >= 10
 
+c_l_member_0_device0_p_con_l(1)_:
++1 member_0_device0_allocated_power(1)
+>= 10
+
+c_l_member_0_device0_p_con_l(2)_:
++1 member_0_device0_allocated_power(2)
+>= 10
+
+c_l_member_0_device0_p_con_l(3)_:
++1 member_0_device0_allocated_power(3)
+>= 10
+
+c_l_member_0_device0_p_con_l(4)_:
++1 member_0_device0_allocated_power(4)
+>= 10
+
 c_u_member_0_device0_p_con_u(0)_:
 +1 member_0_device0_allocated_power(0)
+<= 10
+
+c_u_member_0_device0_p_con_u(1)_:
++1 member_0_device0_allocated_power(1)
+<= 10
+
+c_u_member_0_device0_p_con_u(2)_:
++1 member_0_device0_allocated_power(2)
+<= 10
+
+c_u_member_0_device0_p_con_u(3)_:
++1 member_0_device0_allocated_power(3)
+<= 10
+
+c_u_member_0_device0_p_con_u(4)_:
++1 member_0_device0_allocated_power(4)
 <= 10
 
 c_e_member_0_device0_p_excess_total_l(0)_:
@@ -367,8 +399,40 @@ c_l_member_1_device0_p_con_l(0)_:
 +1 member_1_device0_allocated_power(0)
 >= 10
 
+c_l_member_1_device0_p_con_l(1)_:
++1 member_1_device0_allocated_power(1)
+>= 10
+
+c_l_member_1_device0_p_con_l(2)_:
++1 member_1_device0_allocated_power(2)
+>= 10
+
+c_l_member_1_device0_p_con_l(3)_:
++1 member_1_device0_allocated_power(3)
+>= 10
+
+c_l_member_1_device0_p_con_l(4)_:
++1 member_1_device0_allocated_power(4)
+>= 10
+
 c_u_member_1_device0_p_con_u(0)_:
 +1 member_1_device0_allocated_power(0)
+<= 10
+
+c_u_member_1_device0_p_con_u(1)_:
++1 member_1_device0_allocated_power(1)
+<= 10
+
+c_u_member_1_device0_p_con_u(2)_:
++1 member_1_device0_allocated_power(2)
+<= 10
+
+c_u_member_1_device0_p_con_u(3)_:
++1 member_1_device0_allocated_power(3)
+<= 10
+
+c_u_member_1_device0_p_con_u(4)_:
++1 member_1_device0_allocated_power(4)
 <= 10
 
 c_e_member_1_device0_p_excess_total_l(0)_:
@@ -498,6 +562,10 @@ bounds
    -inf <= member_0_device0_Pcons(3) <= +inf
    -inf <= member_0_device0_Pcons(4) <= +inf
    -inf <= member_0_device0_allocated_power(0) <= +inf
+   -inf <= member_0_device0_allocated_power(1) <= +inf
+   -inf <= member_0_device0_allocated_power(2) <= +inf
+   -inf <= member_0_device0_allocated_power(3) <= +inf
+   -inf <= member_0_device0_allocated_power(4) <= +inf
    0 <= member_0_device0_p_excess_l_all(0) <= +inf
    0 <= member_0_device0_p_excess_l_all(1) <= +inf
    0 <= member_0_device0_p_excess_l_all(2) <= +inf
@@ -514,6 +582,10 @@ bounds
    -inf <= member_1_device0_Pcons(3) <= +inf
    -inf <= member_1_device0_Pcons(4) <= +inf
    -inf <= member_1_device0_allocated_power(0) <= +inf
+   -inf <= member_1_device0_allocated_power(1) <= +inf
+   -inf <= member_1_device0_allocated_power(2) <= +inf
+   -inf <= member_1_device0_allocated_power(3) <= +inf
+   -inf <= member_1_device0_allocated_power(4) <= +inf
    0 <= member_1_device0_p_excess_l_all(0) <= +inf
    0 <= member_1_device0_p_excess_l_all(1) <= +inf
    0 <= member_1_device0_p_excess_l_all(2) <= +inf

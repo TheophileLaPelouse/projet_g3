@@ -54,7 +54,7 @@ class community :
         self.time_set = pyo.RangeSet(0, self.total_time - 1)
         self.member_set = pyo.Set(initialize=members_id)
         self.mod.member_set = self.member_set
-        print("MEMBER SET DEFINED")
+        # print("MEMBER SET DEFINED")
         already_done = set()
         for i in self.members_id :
             for j in self.members_id : 
@@ -70,7 +70,7 @@ class community :
                         self.P_exchange[i][j] = pyo.Var(self.time_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_set])
                         self.mod.add_component(f"P_exchange_{i}_{j}", self.P_exchange[i][j])
                    
-        print("EXCHANGE VARIABLES DEFINED")
+        # print("EXCHANGE VARIABLES DEFINED")
         method = kwargs.get("method", "centralized")
         if method == "centralized" :
             for k in self.members_id :
@@ -83,7 +83,7 @@ class community :
                     member.ref_values = self.ref_values
                     member.build_model(**member.kwargs)
                     member.mod_member.obj.deactivate()
-            print("MEMBER MODELS BUILT")
+            # print("MEMBER MODELS BUILT")
             self.build_centralized(**kwargs)
     
     def clear_model(self):
@@ -200,8 +200,8 @@ class community :
         
         # Construction of Pgrid, Pcons, Pbat, P_self
         # Construction of Pgrid, Pcons, Pbat, P_self
-        print("DEFINING VALUES")
-        print("MEMBER IDS : ", members_id)
+        # print("DEFINING VALUES")
+        # print("MEMBER IDS : ", members_id)
         
         self.mod.P_grid_plus = pyo.Expression(self.time_set, rule=lambda m, t: sum(
             self.members[i].P_grid_plus[t] for i in members_id))
@@ -237,7 +237,7 @@ class community :
         # self.mod.t_excess = pyo.Expression(self.time_set, rule=lambda m, t: sum(
         #     sum(self.members[i].t_excess[t]  for i in members_id)))
         
-        print("COMMUNITY VALUES DEFINED")
+        # print("COMMUNITY VALUES DEFINED")
         
         functions = kwargs.get("functions", []) # format = [f(pcons, pbat, pexchange pgrid), ...]
         eco_args = kwargs.get("eco", {})
@@ -281,7 +281,7 @@ class community :
         results = self.optimize(solver, **options)
         community_obj = pyo.value(self.mod.obj)
         community_price = pyo.value(self.mod.price)
-        print(f"Community objective value: {community_obj}")
+        # print(f"Community objective value: {community_obj}")
         
         self.mod.obj.deactivate()
         
@@ -307,7 +307,7 @@ class community :
         self.tot_members_obj = sum(members_gains)
         self.tot_obj_gains = self.tot_members_obj - community_obj
         
-        print(f"Community objective gain: {self.tot_obj_gains}")
+        # print(f"Community objective gain: {self.tot_obj_gains}")
         self.price_gains = sum(members_price) - community_price
         
         self.mod.obj.activate()
@@ -332,14 +332,14 @@ class community :
                 gain = self.members_obj[i] - cost_prop
                 prop = gain/total_gains if total_gains != 0 else 0
                 self.members_gains["proportional"][i] = (prop, gain)
-                print(f"Member {i} gain : {gain}, cost : {cost}, prop : {prop}")
+                # print(f"Member {i} gain : {gain}, cost : {cost}, prop : {prop}")
                 
         elif method == "equal" :
             gain = total_gains/len(self.members_id)
             self.members_gains["equal"] = {}
             for i in self.members_id : 
                 self.members_gains["equal"][i] = (gain, gain/total_gains if total_gains != 0 else 0)
-                print(f"Member {i} gain : {gain}")
+                # print(f"Member {i} gain : {gain}")
                 
         elif method == "shapley" : 
             self.members_gains["shapley"] = {}
@@ -352,7 +352,7 @@ class community :
             for m in self.members_id : 
                 gain = self.marginal_contribution_sum(m, combinations)
                 self.members_gains["shapley"][m] = (gain, gain/total_gains if total_gains != 0 else 0)
-                print(f"Member {m} gain : {gain}")
+                # print(f"Member {m} gain : {gain}")
         return
     
     def compute_combinations(self, combinations, **kwargs) :
@@ -360,7 +360,7 @@ class community :
         # pour ne pas faire 25 boucles différentes.
         for comb in combinations :
             deactivate_set = set()
-            print("combinaison", comb)
+            # print("combinaison", comb)
             self.current_members_id = list(comb)
             self.build_model(**kwargs)
             # for i in self.members_id : 

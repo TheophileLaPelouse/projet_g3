@@ -327,7 +327,174 @@ co.plot_power_curves(**to_plot)
 # }
 # co.plot_hexagon(**to_plot_hex)
 
+#%% Test de generate_data.py
+from commu_opti.data.generate_data import generate_n_profile
+import matplotlib.pyplot as plt
+
+profile = [[0, 8, 1], [8, 16, 0], [16, 24, 1]]
+
+profiles, details = generate_n_profile(5, profile, offset=2, lengths_rate=1.3, lengths_breaks_rate=0.3)
+
+for i, detail in enumerate(details):
+    plt.figure()
+    plt.step(range(len(detail)), detail, 'b', where='post', label=str(profiles[i]))
+    plt.title(f"Profile {i}")
+    plt.xlabel("Time")
+    plt.ylabel("Presence")
+    plt.ylim(-0.5, 1.5)
+    plt.legend()
+    plt.grid()
+
+plt.show()
+
+#%% Test profil conso generate_data.py
+from commu_opti.data.generate_data import generate_n_profile, create_random_agent
+from commu_opti.commu_builder import define_devices, define_members, define_community
+profile = [[0, 8, 1], [8, 16, 0], [16, 24, 1]]
+agent = create_random_agent(profile, forced_devices={"batterie", "PV_generation"})
+
+import os 
+import pandas as pd 
+import matplotlib.pyplot as plt
+
+if agent.get("PV_generation") : 
+    prod_profile = agent["PV_generation"]["parameters"]["production_profile"]
+else : 
+    prod_profile = [0 for t in range(24)]
+
+param = {"devices" : agent, "device_options" : {"total_time" : 24, "deltat" : 1}, 
+         "parameters" : {
+            "production_profile" : prod_profile,
+            "socio" : [1, 1, 1, 1],
+            "id_" : 1, 
+            "bat_exchange" : False, 
+         }}
+
+# Test first for one device with eache device : 
+# for device in agent : 
+#     print(f"Testing device {device} \n")
+#     param["devices"] = {device : agent[device]}
+#     member = define_members([param])[0]
+#     member.mod_member.write(f'member_{device}.lp', io_options={'symbolic_solver_labels': True})
+
+member = define_members([param])[0]
+
+member.mod_member.write('member.lp', io_options={'symbolic_solver_labels': True})
+
+member.self_optimize("gurobi")
+to_plot = {
+    "powers" : {
+        "P_grid" : [pyo.value(member.P_grid_plus[t]-member.P_grid_minus[t]) for t in range(member.total_time)],
+        "P_bat" : [pyo.value(member.P_bat[t]) for t in range(member.total_time)],
+        "P_cons" : [pyo.value(member.P_cons[t]) for t in range(member.total_time)], 
+        "P_exchange" : [pyo.value(member.P_exchange[t]) for t in range(member.total_time)],
+        "P_prod" : prod_profile, 
+    }
+}
+
+device_energy = {}
+# to_plot["powers"]["total"] = [0 for t in range(member.total_time)]
+for d in member.devices : 
+    if d.name != "heater" :
+    #     to_plot["powers"][f"P_{d.name}"] = [pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)]
+        # to_plot["powers"]["total"] = [to_plot["powers"]["total"][t] + pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)]
+        device_energy[d.name] = sum([pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)])
+    # if d.name == "EV_zoe" :
+    #     to_plot["powers"][f"E_{d.name}"] = [pyo.value(d.mod.E[t]) if d.mod.E[t].value else 0 for t in range(member.total_time)]
+    
+member.plot_power_curves(**to_plot)
+
+data_folder = os.path.join(os.path.dirname(__file__), "../../projet_g3_data")
+fridge_file = os.path.join(data_folder, "water_heater_refrigerator.xlsx")
+df_fridge = pd.read_excel(fridge_file, sheet_name="Sheet2", parse_dates=["date"])
+
+# time = [k*0.25 for k in range(len(df_fridge))]
+# plt.plot(time, df_fridge["power"], label="Real consumer profile")
+# plt.legend()
+
+#%% Creattion random community test 
+
+from commu_opti.data.generate_data import generate_n_profile, create_random_agent, detailed_profile
+from commu_opti.commu_builder import define_devices, define_members, define_community
+
+profile = [[0, 8, 1], [8, 16, 0], [16, 24, 1]]
+profiles = generate_n_profile(15, profile, offset=2, lengths_rate=1.3, lengths_breaks_rate=0.3)
+
+agents = []
+prod_profiles = []
+for profile in profiles :
+    agent = create_random_agent(profile)
+    agents.append(agent)
+    if agent.get("PV_generation") : 
+        prod_profiles.append(agent["PV_generation"]["parameters"]["production_profile"])
+    else : 
+        prod_profiles.append([0 for t in range(24)])
+    
+members_params = []
+for i, agent in enumerate(agents) :
+    param = {"devices" : agent, "device_options" : {"total_time" : 24, "deltat" : 1}, 
+             "parameters" : {
+                "production_profile" : prod_profiles[i],
+                "socio" : [0.1, 0, 0, 1],
+                "id_" : i+1, 
+                "bat_exchange" : False, 
+             }}
+    members_params.append(param)
+members = define_members(members_params)
+
+for member in members : 
+    member.self_optimize("gurobi")
+    
+    to_plot = {
+        "powers" : {
+            # "P_grid" : [pyo.value(member.P_grid_plus[t]-member.P_grid_minus[t]) for t in range(member.total_time)],
+            "P_prod" : member.P_prod, 
+        }
+    }
+    for d in member.devices : 
+        if d.name != "" :
+            to_plot["powers"][f"P_{d.name}"] = [pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)]
+            # to_plot["powers"]["total"] = [to_plot["powers"]["total"][t] + pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)]
+            # device_energy[d.name] = sum([pyo.value(d.mod.Pcons[t]) for t in range(member.total_time)])
+    if not member.ref_values == [1, 1, 1 , 1] : 
+        plt.figure(member.id)
+        to_plot["title"] = f"Member {member.id}"
+        member.plot_power_curves(**to_plot)
+
+
+#%% def save candidate
+
+import json 
+import os 
+import numpy as np
+
+data_folder = os.path.join(os.path.dirname(__file__), "../../projet_g3_data/candidates")
+if not os.path.exists(data_folder) : 
+    os.makedirs(data_folder)
+
+def convert_to_serializable(obj):
+    if isinstance(obj, np.integer):  # Convert NumPy integers to Python int
+        return int(obj)
+    if isinstance(obj, np.floating):  # Convert NumPy floats to Python float
+        return float(obj)
+    if isinstance(obj, np.ndarray):  # Convert NumPy arrays to lists
+        return obj.tolist()
+    raise TypeError(f"Type {type(obj)} not serializable")
+
+
+def save_candidate(members_params, name, id_) :
+    file_name = f"candidate_{name}.json"
+    file_path = os.path.join(data_folder, file_name)
+    with open(file_path, 'w') as f:
+        json.dump(members_params[id_-1], f, indent=4, default=convert_to_serializable)
+        
+to_save = [(3, "grosse_conso"), (15, "batterie")]
+for i, name in to_save : 
+    save_candidate(members_params, name, i)
+
+
 #%% test autres
+
 
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory

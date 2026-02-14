@@ -13,6 +13,7 @@ class device :
         
         
         # input definition
+        self.name = kwargs.get("name", "device")
         self.p_range = power_range
         self.t_use = time_use 
         self.t_range = time_range 
@@ -27,7 +28,9 @@ class device :
         
         time=0
         c = 0
-        while time < self.total_time : 
+        # print(self.t_use)
+        while time < self.total_time and c < len(self.t_use): 
+            # print(c)
             t0, tend = self.t_use[c]
             tmin = max(0, t0 + self.t_range[c][0])
             tmax = min(self.total_time, tend + self.t_range[c][1]+1)
@@ -164,12 +167,14 @@ class device :
         
         def start_constraint(mod, t) : 
             c = 0 
+            if t == 0 : 
+                return mod.E[t] == self.E0[c]
             for i in mod.start_set :
                 if i == t :
                     break 
                 else : 
                     c += 1
-            return mod.E[t] == self.E0[c]
+            return mod.E[t] == mod.E[mod.end_set.at(c)] + self.E0[c]
         
         def end_constraint(mod, t) : 
             c = 0 
@@ -180,6 +185,9 @@ class device :
                     c += 1
             return mod.E[t] == self.E_min[c]
         
+        # self.start_set.display()
+        # self.end_set.display()
+        
         mod.start_con = pyo.Constraint(self.start_set, rule=start_constraint)
         mod.end_con = pyo.Constraint(self.end_set, rule=end_constraint)
             
@@ -189,6 +197,8 @@ class device :
 class white_good(device) : 
     def __init__(self, start_pref, cycle_length, time_range, power_needed, **kwargs) : 
         power_range = [[power_needed[k], power_needed[k]] for k in range(len(start_pref))]
+        # print("cycle_length", cycle_length)
+        cycle_length = [int(cycle_length[k]/kwargs.get("deltat", 1)) + 1 for k in range(len(cycle_length))]
         time_use = [[start_pref[k], start_pref[k] + cycle_length[k]] for k in range(len(start_pref))]
         super().__init__(power_range, time_use, time_range, **kwargs)
         self.generate_spec_constraint()
@@ -222,6 +232,10 @@ class white_good(device) :
             setattr(self.mod, f"starting_time_minus_{instant}", starting_time_minus)
             
             time_con= pyo.Constraint(expr=sum(bin_t0[t] for t in set_t0)==1)
+            
+            # print("BONJOUR", self.t_use[instant][0], self.t_range[instant])
+            # set_t0.display()
+            
             setattr(self.mod, f"bin_t_con_{instant}", time_con)
             starttime_con_plus = pyo.Constraint(expr=sum((t+1)*bin_t0[t] for t in set_t0)- self.t_use[instant][0] <= starting_time_plus)
             setattr(self.mod, f"starttime_con_plus_{instant}", starttime_con_plus)
@@ -268,18 +282,19 @@ class white_good(device) :
 class fixed(device) :
     def __init__(self, power_profile, **kwargs) : 
         # One power value per hour
-        power_range = []
-        time_use = []
-        for k in range(len(power_profile)) : 
-            if k == 0 : 
-                power_range.append([power_profile[k], power_profile[k]])
-                start_time = k
-            if power_profile[k] != power_range[-1][0] : 
-                time_use.append([start_time, k-1])
-                power_range.append([power_profile[k], power_profile[k]])
-                start_time = k
-        if start_time != len(power_profile) - 1 : 
-            time_use.append([start_time, len(power_profile) - 1])
+        total_time = len(power_profile)
+        power_range = [[power_profile[k], power_profile[k]] for k in range(total_time)]
+        time_use = [[k, k+1] for k in range(total_time)]
+        # for k in range(len(power_profile)) : 
+        #     if k == 0 : 
+        #         power_range.append([power_profile[k], power_profile[k]])
+        #         start_time = k
+        #     if power_profile[k] != power_range[-1][0] : 
+        #         time_use.append([start_time, k-1])
+        #         power_range.append([power_profile[k], power_profile[k]])
+        #         start_time = k
+        # if start_time != len(power_profile) - 1 : 
+        #     time_use.append([start_time, len(power_profile) - 1])
         # print(time_use, power_range)
         time_range = [[0, 0] for k in range(len(time_use))]
         super().__init__(power_range, time_use, time_range, **kwargs)
@@ -389,10 +404,10 @@ class EV(device) :
         self.E_range = E_range
         self.E_end = E_end
         
-        self.charge_eff = kwargs.get('charge_eff', 0.98)
-        self.dcharge_eff = kwargs.get('dcharge_eff', 0.98)
+        self.charge_eff = kwargs.get('charge_eff', 0.92)
+        self.dcharge_eff = kwargs.get('dcharge_eff', 0.92)
         self.E0 = E0s
-        self.E = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(self.E_range[0], self.E_range[1]))
+        self.E = pyo.Var(self.t_set, within=pyo.Reals, bounds=(self.E_range[0], self.E_range[1]))
         self.P_plus = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(0, p_range[1]))
         self.P_minus = pyo.Var(self.t_set, within=pyo.NonNegativeReals, bounds=(0, -p_range[0]))
         

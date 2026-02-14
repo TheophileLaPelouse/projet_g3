@@ -7,7 +7,8 @@ from ..plotting.plot_functions import plot_power_curves
 class member : 
     def __init__(self, devices, production_profile, socio, id_, **kwargs) :
         
-        method =kwargs.get("method", "centralized")         
+        method =kwargs.get("method", "centralized")   
+        self.name = kwargs.get("name", f"member_{id_}")      
         self.socio = socio 
         self.ref_values = kwargs.get("ref_values", [1 for k in range(len(socio)+1)])
         self.id = id_
@@ -28,7 +29,9 @@ class member :
             
         calc_ref = kwargs.get("calc_ref", True)
         if calc_ref :
+            # print("C'est ICI")
             self.calc_ref_values(**kwargs)
+            # print("Ou c'est après")
             self.build_model(**kwargs)
         # print("BUILDING MEMBER DONE")
     
@@ -166,6 +169,7 @@ class member :
         self.mod_member.P_grid_plus = self.P_grid_plus
         self.mod_member.P_grid_minus = self.P_grid_minus
         
+        # print("bat_exchange", kwargs.get("bat_exchange", False))
         if kwargs.get("bat_exchange", False) : 
             self.charging = pyo.Var(self.time_index, within=pyo.Boolean, initialize=[0 for t in self.time_index])
             self.P_bat_plus = pyo.Var(self.time_index, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_index])
@@ -284,11 +288,19 @@ class member :
             # if white goods
             if hasattr(d.mod, "t_confort_lvl") : 
                 for instant in d.mod.t_set : 
-                    starting_time = int((d.t_use[instant][0] + getattr(d.mod, f"set_t0_{instant}").at(1))/2)
+                    div = (d.t_use[instant][0] + getattr(d.mod, f"set_t0_{instant}").at(1))/2
+                    starting_time = int(div)
+                    if starting_time != div and div!=0 : 
+                        starting_time += 1
                     diff = d.t_use[instant][0] - starting_time
+                    # print("diff", diff)
                     if diff == 0 : 
-                        starting_time = int((d.t_use[instant][0] + getattr(d.mod, f"set_t0_{instant}").at(-1))/2)
-                        diff = d.t_use[instant][0] - starting_time
+                        div = (d.t_use[instant][0] + getattr(d.mod, f"set_t0_{instant}").at(-1))/2
+                        starting_time = int(div)
+                        if starting_time != div and div!=0 : 
+                            starting_time += 1
+                        diff = starting_time - d.t_use[instant][0]
+                    # print("diff after diff == 0,", diff, getattr(d.mod, f"set_t0_{instant}").at(-1))
                     if diff >= 0 : 
                         getattr(d.mod, f"starting_time_plus_{instant}").fix(diff)
                         getattr(d.mod, f"starting_time_minus_{instant}").fix(0)
