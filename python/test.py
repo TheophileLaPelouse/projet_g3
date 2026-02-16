@@ -333,11 +333,11 @@ import matplotlib.pyplot as plt
 
 profile = [[0, 8, 1], [8, 16, 0], [16, 24, 1]]
 
-profiles, details = generate_n_profile(5, profile, offset=2, lengths_rate=1.3, lengths_breaks_rate=0.3)
+detailed_profile, details = generate_n_profile(5, profile, offset=2, lengths_rate=1.3, lengths_breaks_rate=0.3, detailed= True)
 
 for i, detail in enumerate(details):
     plt.figure()
-    plt.step(range(len(detail)), detail, 'b', where='post', label=str(profiles[i]))
+    plt.step(range(len(detail)), detail, 'b', where='post', label=str(detailed_profile[i]))
     plt.title(f"Profile {i}")
     plt.xlabel("Time")
     plt.ylabel("Presence")

@@ -31,6 +31,7 @@ class community :
         self.price_gains = 0
         self.members_gains = {}
         self.tot_members_obj = 0
+        self.money_gains = 0
         
         nb_member = len(self.members_id)
         for i in self.members_id : 
@@ -306,6 +307,7 @@ class community :
         self.community_price = community_price
         self.tot_members_obj = sum(members_gains)
         self.tot_obj_gains = self.tot_members_obj - community_obj
+        self.money_gains = sum(members_price) - community_price
         
         # print(f"Community objective gain: {self.tot_obj_gains}")
         self.price_gains = sum(members_price) - community_price

@@ -121,7 +121,8 @@ def generate_n_profile(n, profile, **kwargs) :
     detailed_profiles = []
     for profile, detail in zip(profiles, details) : 
         detailed_profiles.append(detailed_profile(profile, detail))
-    
+    if kwargs.get("detailed") : 
+        return detailed_profiles, details
     return detailed_profiles
         
 def detailed_profile(profile, detail) : 

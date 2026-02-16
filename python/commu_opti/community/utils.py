@@ -22,7 +22,7 @@ def calc_auto(Pgrid, **kwargs) :
 def calc_eco(Pgrid_plus, Pgrid_minus, Pex, **kwargs) : 
     deltat = kwargs.get("deltat", 1)
     cost_grid_buy = kwargs.get("cost_grid_buy", 1)
-    cost_grid_sell = kwargs.get("cost_grid_sell", -0.5)
+    cost_grid_sell = kwargs.get("cost_grid_sell", -0.25)
     cost_ex = kwargs.get("cost_ex", 0)
     ref_value = kwargs.get("ref", 1)
     return (
