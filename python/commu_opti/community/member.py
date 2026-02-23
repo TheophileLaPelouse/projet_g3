@@ -10,6 +10,7 @@ class member :
         method =kwargs.get("method", "centralized")   
         self.name = kwargs.get("name", f"member_{id_}")      
         self.socio = socio 
+        self.socio_commu = self.socio 
         self.ref_values = kwargs.get("ref_values", [1 for k in range(len(socio)+1)])
         self.id = id_
         self.commu = None
@@ -36,7 +37,8 @@ class member :
         # print("BUILDING MEMBER DONE")
     
     def add_to_community(self, commu, id_) :
-        self.commu = commu    
+        self.commu = commu  
+        self.socio_commu = commu.socio  
         self.id=id_
     
     def calc_profile(self, deltat=1) : 
@@ -229,15 +231,15 @@ class member :
         # pena_args = kwargs.get("pena", {})
         # pena_args["ref"] = self.ref_values[4]
         
-        self.mod_member.obj = pyo.Objective(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args)*self.socio[0]
-                                     + calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args)*self.socio[1]
-                                     + calc_auto(self.P_grid_plus, **auto_args)*self.socio[2]
-                                     + calc_confort(self.mod_member.p_confort, self.mod_member.t_confort, **confort_args)*self.socio[3]
+        self.mod_member.obj = pyo.Objective(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args)*self.socio_commu[0]
+                                     + calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args)*self.socio_commu[1]
+                                     + calc_auto(self.P_grid_plus, **auto_args)*self.socio_commu[2]
+                                     + calc_confort(self.mod_member.p_confort, self.mod_member.t_confort, **confort_args)*self.socio_commu[3]
                                      + sum(f(self.P_cons, self.P_bat, self.P_exchange, self.P_grid_plus, self.P_grid_minus) for f in functions)/self.ref_values[-1]
                                     #  + calc_pena_pow(self.mod_member.p_excess_l, self.mod_member.p_excess_u, **pena_args)
                                      )
         self.price = pyo.Expression(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args))
-        self.enviro = pyo.Expression(expr=calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self_prod, **enviro_args))
+        self.enviro = pyo.Expression(expr=calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args))
         self.auto = pyo.Expression(expr=calc_auto(self.P_grid_plus, **auto_args))
         self.confort = pyo.Expression(expr=calc_confort(self.mod_member.p_confort, self.mod_member.t_confort, **confort_args))
         

@@ -152,6 +152,8 @@ profiles = [[0.4, 0.1, 0, 0.5], [0.5, 0.2, 0, 0.3], [0.8, 0.1, 0, 0.1], [0.4, 0.
 
 for member in members :
     member.socio = profiles[member.id]
+    
+# members = members[0:2]
 
 param_commu = {
     "method" : "centralized",
@@ -165,6 +167,8 @@ community = define_community(members, **param_commu)
 # community.socio = [1, 1, 0, 1]
 community.optimize("gurobi")
 
+#%%
+
 community.calc_gains("gurobi")
 print("Gains calculated \n")
 community.distribute_gains(method="proportional")
@@ -176,8 +180,101 @@ print("Gains distributed equally \n")
 community.distribute_gains(method="shapley")
 print("Gains distributed with Shapley \n")
 
+#%% test 
+# community.current_members_id = [0, 1]
+community.build_model()
+r = community.optimize("gurobi")
+print(pyo.value(community.mod.obj))
+print(pyo.value(community.price))
+print(pyo.value(community.enviro))
+print(pyo.value(community.confort))
+#%% Repartition of gains 
 
+values = community.members_gains
+labels = [f"Member {member.id}" for member in community.members]
 
+production_peaks = [max(community.members[id_].P_prod) for id_ in community.members_id]
+normaliser = sum(production_peaks)
+
+prod_values = {member.id : production_peaks[member.id]/normaliser for member in community.members}
+
+bat_capacities = []
+for id_ in community.members_id :
+    member = community.members[id_]
+    C = 0
+    for device in member.devices :
+        if hasattr(device, "E") : 
+            C += device.E_range[1] - device.E_range[0]
+
+    bat_capacities.append(C)
+normaliser_bat = sum(bat_capacities)
+bat_values = {member.id : bat_capacities[member.id]/normaliser_bat for member in community.members}
+
+conso = []
+for id_ in community.members_id :
+    member = community.members[id_]
+    conso.append(sum(pyo.value(member.P_cons[t]) for t in range(member.total_time)))
+normaliser_conso = sum(conso)
+conso_values = {member.id : conso[member.id]/normaliser_conso for member in community.members}
+
+values["Production"] = prod_values
+values["Battery capacity"] = bat_values
+values["Consumption"] = conso_values
+
+folder_path = os.path.join(home_path, "figs/gains_allocation")
+if not os.path.exists(folder_path) :
+    os.makedirs(folder_path)
+
+to_plot = {
+    "values" : {"Proportional allocation" : values["proportional"],
+                "Equal allocation" : values["equal"],
+                "Shapley allocation" : values["shapley"],
+                },
+    "labels" : labels,
+    "dimension" : 1,
+    "title" : "Gains allocation in proportion to total gains among members",
+    "save_path" : os.path.join(folder_path, "gains_allocation_proportional.eps")
+}
+fig1, ax1 = plot_hexagon_objective(**to_plot)
+
+to_plot = {
+    "values" : {"Proportional allocation" : values["proportional"],
+                "Production rate" : values["Production"],
+                "Battery capacity rate" : values["Battery capacity"],
+                "Consumption rate" : values["Consumption"]
+                },
+    "labels" : labels,
+    "dimension" : 1,
+    "title" : "Proportional allocation compared to production and battery capacity rates",
+    "save_path" : os.path.join(folder_path, "proportional_vs_production_battery.eps")
+}
+fig2, ax2 = plot_hexagon_objective(**to_plot)
+
+to_plot = {
+    "values" : {"Shapley allocation" : values["shapley"],
+                "Production rate" : values["Production"],
+                "Battery capacity rate" : values["Battery capacity"],
+                "Consumption rate" : values["Consumption"]
+                },  
+    "labels" : labels,
+    "dimension" : 1,
+    "title" : "Shapley allocation compared to production and battery capacity rates",
+    "save_path" : os.path.join(folder_path, "shapley_vs_production_battery.eps")
+}
+fig3, ax3 = plot_hexagon_objective(**to_plot)
+
+to_plot = {
+    "values" : {"Equal allocation" : values["equal"],
+                "Production rate" : values["Production"],
+                "Battery capacity rate" : values["Battery capacity"],
+                "Consumption rate" : values["Consumption"]
+                },  
+    "labels" : labels,
+    "dimension" : 1,
+    "title" : "Equal allocation compared to production and battery capacity rates",
+    "save_path" : os.path.join(folder_path, "equal_vs_production_battery.eps")
+}
+fig4, ax4 = plot_hexagon_objective(**to_plot)
 
 #%% plot
 community.socio = [1, 1, 0, 1]
@@ -303,3 +400,5 @@ plt.xlabel(options["xlabel"])
 plt.ylabel(options["ylabel"])
 plt.grid()
 plt.savefig(options["save_path"])
+
+

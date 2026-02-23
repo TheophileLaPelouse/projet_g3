@@ -5,7 +5,7 @@ from matplotlib.colors import LightSource
 from matplotlib.ticker import LinearLocator
 from ..community import pyo
 
-
+#%%
 def plot_3d(x, y, z, title="3D Plot", xlabel="X-axis", ylabel="Y-axis", zlabel="Z-axis", save_path=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -32,7 +32,7 @@ def plot_3d(x, y, z, title="3D Plot", xlabel="X-axis", ylabel="Y-axis", zlabel="
 #     plt.show()
 #     return fig, ax
 
-def plot_hexagon_objective(values, members, title="Radar Objective Visualization", **kwargs):
+def plot_hexagon_objective(values, title="Radar Objective Visualization", **kwargs):
     """
     Plot a hexagon radar chart based on objective values.
 
@@ -47,22 +47,33 @@ def plot_hexagon_objective(values, members, title="Radar Objective Visualization
     # Define the angles for the vertices of the hexagon
     angles = [2*np.pi*(k/n) for k in range(n)]
     
-    print(n, angles)
+    # print(n, angles)
     # Create the plot
     fig, ax = plt.subplots(subplot_kw=dict(polar=True))
-    colors = kwargs.get("colors", ['b', 'r', 'g', 'm', 'c'])
+    
+    CB_color_cycle = ['#377eb8', '#ff7f00', '#4daf4a',
+                  '#f781bf', '#a65628', '#984ea3',
+                  '#999999', '#e41a1c', '#dede00']
+    colors = kwargs.get("colors", CB_color_cycle)
+    alpha = kwargs.get('alpha', 0.25)
+    dimension = kwargs.get("dimension", 0)
     c = 0
     for key in values :
         color = colors[c % len(colors)]
         c+=1
         # Plot the hexagon
-        vals = [values[key][key2][0] for key2 in values[key]]
-        ax.plot(angles, vals, color=color, linewidth=1, linestyle='solid', label=key)
-        ax.fill(angles, vals, color=color, alpha=0.25)
+        values_key = values[key]
+        if isinstance(values_key[next(iter(values_key))], (tuple, list)) : 
+            vals = [values[key][key2][dimension] for key2 in values[key]]
+        else : 
+            vals = [values[key][key2] for key2 in values[key]]
+        ax.plot(angles + [angles[0]], vals + [vals[0]], color=color, linewidth=1, label=key)
+        ax.fill(angles, vals, color=color, alpha=alpha)
 
     # Add labels to the vertices
+    labels = kwargs.get("labels", [key for key in values[first_key]])
     ax.set_xticks(angles)
-    ax.set_xticklabels(members)
+    ax.set_xticklabels(labels)
 
     # Set the range for the radial axis
     # ax.set_ylim(0, 1)
@@ -70,6 +81,10 @@ def plot_hexagon_objective(values, members, title="Radar Objective Visualization
     # Add title and legend
     ax.set_title(title, va='bottom')
     ax.legend(loc="upper right")#, bbox_to_anchor=(1.1, 1.1))
+    
+    path_to_save = kwargs.get("save_path", None)
+    if path_to_save : 
+        plt.savefig(path_to_save, bbox_inches='tight')
 
     # Show the plot
     plt.show()
@@ -102,10 +117,10 @@ def plot_power_curves(total_time, deltat, **kwargs) :
     
     path_to_save = kwargs.get("save_path", None)
     if path_to_save : 
-        plt.savefig(path_to_save)
+        plt.savefig(path_to_save, bbox_inches='tight')
     return fig, ax
 
-    
+    #%%
 if __name__ == "__main__":
     # Example usage
     x = [10, 20, 30, 40, 50]
@@ -123,7 +138,7 @@ if __name__ == "__main__":
     # y = [0, 0, 1, 1]
     # z = [0, 1, 1, 0]
     # plot_3d_filled(x, y, z)
-    fig, ax = plot_3d(x, y, z)
+    # fig, ax = plot_3d(x, y, z)
     
     # X = [[0,1], [0, 1], [0.5, 0], [1,0.5]]
     # Y = [[0, 0], [1, 1], [0.5, 0], [0, 0.5]]
@@ -132,9 +147,23 @@ if __name__ == "__main__":
 
     # plot_3d_square_with_surface()
     
-    # objective_values = [0.8, 0.6, 0.9, 0.7, 0.5]  # Normalized objective values (0 to 1)
-    # member_labels = ["Eco", "Enviro", "Comfort", "Auto", "Other"]
-    # plot_hexagon_objective(objective_values, labels=member_labels)
+    member_labels = ["Eco", "Enviro", "Comfort"]
+    members = [1, 2, 3, 4]
+    objective_values = {
+        "method1" : {
+            1 : [0.25],
+            2 : [0.25],
+            3 : [0.25],
+            4 : [0.25]
+        },
+        "method2" : {
+            1 : [0.5],
+            2 : [0.25],
+            3 : [0.15],
+            4 : [0.1]
+        }
+    }
+    plot_hexagon_objective(objective_values, alpha=0.2)
     
     # fig, ax = plot_3d(x, y, z)
     

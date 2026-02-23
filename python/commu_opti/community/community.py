@@ -25,6 +25,7 @@ class community :
         
         self.members_obj = []
         self.members_price = []
+        self.members_details = {}
         self.community_obj = 0
         self.community_price = 0
         self.tot_obj_gains = 0
@@ -32,6 +33,8 @@ class community :
         self.members_gains = {}
         self.tot_members_obj = 0
         self.money_gains = 0
+        
+        self.combinations = None
         
         nb_member = len(self.members_id)
         for i in self.members_id : 
@@ -68,6 +71,7 @@ class community :
                             self.mod.add_component(f"P_exchange_{i}_{j}", self.P_exchange[i][j])
                             already_done.add((i, j))
                     else : 
+                        # print("On est bien passés par là ? ", i, j)
                         self.P_exchange[i][j] = pyo.Var(self.time_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_set])
                         self.mod.add_component(f"P_exchange_{i}_{j}", self.P_exchange[i][j])
                    
@@ -278,31 +282,53 @@ class community :
         
         return 
     
-    def calc_gains(self, solver, **options) :
-        results = self.optimize(solver, **options)
-        community_obj = pyo.value(self.mod.obj)
-        community_price = pyo.value(self.mod.price)
-        # print(f"Community objective value: {community_obj}")
+    def optimize_selves(self, solver, **options) :
         
         self.mod.obj.deactivate()
-        
-        for i in self.members_id : 
-            for j in self.members_id : 
-                if self.P_exchange[i][j] is not None : 
-                    self.P_exchange[i][j].fix(0)
         members_gains = []
         members_price = []
-        for i in self.members_id :
+        members_comfort = []
+        members_eco = []
+        
+        for i in self.current_members_id : 
+            for j in self.current_members_id : 
+                if self.P_exchange[i][j] is not None : 
+                    self.P_exchange[i][j].fix(0)
+        
+        for i in self.current_members_id :
             self.members[i].mod_member.obj.activate()
             self.members[i].self_optimize(solver, **options)
+            self.members[i].mod_member.obj.deactivate()
             member_obj = pyo.value(self.members[i].mod_member.obj)
             member_price = pyo.value(self.members[i].mod_member.price)
             members_gains.append(member_obj)
             members_price.append(member_price)
-            self.members[i].mod_member.obj.deactivate()
+            members_comfort.append(pyo.value(self.members[i].mod_member.confort))
+            members_eco.append(pyo.value(self.members[i].mod_member.enviro))
+            
+        self.mod.obj.activate()
+        for i in self.current_members_id : 
+            for j in self.current_members_id : 
+                if self.P_exchange[i][j] is not None : 
+                    self.P_exchange[i][j].unfix()
+        
+        return {"gains" : members_gains, "price" : members_price, "comfort" : members_comfort, "enviro" : members_eco}
+    
+    def calc_gains(self, solver, **options) :
+        self.current_members_id = self.members_id[:]
+        kwargs = self.kwargs
+        self.build_model(**kwargs)
+        results = self.optimize(solver, **options)
+        community_obj = pyo.value(self.mod.obj)
+        community_price = pyo.value(self.mod.price)
+        # print(f"Community objective value: {community_obj}")
+        results = self.optimize_selves(solver, **options)
+        members_gains = results["gains"]
+        members_price = results["price"]
         
         self.members_obj = members_gains
         self.members_price = members_price
+        self.members_details = results
         self.community_obj = community_obj
         self.community_price = community_price
         self.tot_members_obj = sum(members_gains)
@@ -311,12 +337,6 @@ class community :
         
         # print(f"Community objective gain: {self.tot_obj_gains}")
         self.price_gains = sum(members_price) - community_price
-        
-        self.mod.obj.activate()
-        for i in self.members_id : 
-            for j in self.members_id : 
-                if self.P_exchange[i][j] is not None : 
-                    self.P_exchange[i][j].unfix()
                     
         return
         
@@ -333,7 +353,7 @@ class community :
                 cost_prop = cost + abs_cost/s_abs*(self.community_obj - self.tot_members_obj)
                 gain = self.members_obj[i] - cost_prop
                 prop = gain/total_gains if total_gains != 0 else 0
-                self.members_gains["proportional"][i] = (prop, gain)
+                self.members_gains["proportional"][i] = (gain, prop)
                 # print(f"Member {i} gain : {gain}, cost : {cost}, prop : {prop}")
                 
         elif method == "equal" :
@@ -351,38 +371,33 @@ class community :
                 for comb in itertools.combinations(self.members_id, k) : 
                     combinations[comb] = None
             combinations = self.compute_combinations(combinations)
+            self.combinations = combinations
             for m in self.members_id : 
                 gain = self.marginal_contribution_sum(m, combinations)
                 self.members_gains["shapley"][m] = (gain, gain/total_gains if total_gains != 0 else 0)
                 # print(f"Member {m} gain : {gain}")
         return
     
-    def compute_combinations(self, combinations, **kwargs) :
+    def compute_combinations(self, combinations) :
         # Si vraiment trop long, faudra réécrire en faisant les choses dans le bon ordre 
         # pour ne pas faire 25 boucles différentes.
         for comb in combinations :
-            deactivate_set = set()
             # print("combinaison", comb)
             self.current_members_id = list(comb)
+            kwargs = self.kwargs 
             self.build_model(**kwargs)
-            # for i in self.members_id : 
-            #     if i in comb : 
-            #         self.members[i].mod_member.activate()
-            #     else : 
-            #         self.members[i].mod_member.deactivate()
-            #         for j in self.members_id :
-            #             if (i, j) not in deactivate_set and self.P_exchange[i][j] is not None : 
-            #                 self.P_exchange[i][j].fix(0)
-            #                 self.mod.surplus_only[i, j].deactivate()
-            #                 deactivate_set.add((i, j))
-            
-            # self.mod.obj.activate()
-            # self.mod.write(f'commu_{"".join([str(k) for k in comb])}.lp', io_options={'symbolic_solver_labels': True})
             solver = kwargs.get("solver", "gurobi")
             options = kwargs.get("options", {})
             self.optimize(solver, **options)
             
-            combinations[comb] = self.tot_members_obj - pyo.value(self.mod.obj)
+            community_obj = pyo.value(self.mod.obj)
+            
+            members_details = self.optimize_selves(solver, **options)
+            tot_members_obj = sum(members_details["gains"])
+            
+            # print(f"Combination {comb} : Community obj : {community_obj}, sum of members obj : {tot_members_obj}")
+            
+            combinations[comb] = tot_members_obj - community_obj
         
         self.current_members_id = [self.members_id[k] for k in range(len(self.members_id))]
         self.clear_model()
@@ -401,7 +416,7 @@ class community :
                     gain_without_i = 0
                 else : 
                     gain_without_i = combinations[comb_without_i] 
-                s += (gain_with_i - gain_without_i)/math.comb(n-1, len(comb)-1)
+                s += (gain_with_i - gain_without_i)/math.comb(n-1, len(comb)-1)/n
         return s
                 
     def plot_power_curves(self, **kwargs) :

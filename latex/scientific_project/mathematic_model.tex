@@ -1,6 +1,6 @@
 \subsection{Overview of the models}
 
-As seen in the previous section \ref{methodology}, the model of the community is built in a modular way. We first define the model of the different devices and flexibility services, then the member model and finally the community model. So in this part, we will present in detail how the devices are separated in different categories and how to define their model. Then we will see exactly how the aggregated model are built and define the different objective functions. This model is multi-objective as we want to optimize the community based on sociological profiles of the members. Therefore, we need to build different objective functions, and we need a way to compare them.
+As seen in the previous section \ref{methodology}, the model of the community is built in a modular way. We first define the model of the different devices and flexibility services, then the member model and finally the community model. So in this part, we will present in detail how the devices are separated in different categories and how to define their model. Then we will see exactly how the aggregated model are built and define the different objective functions. This model is multi-objective as we want to optimize the community based on sociological profiles of the members. Therefore, we need to build different objective functions, and we need a way to compare them in order to plot the Pareto front.
 
 \subsection{Flexibility services model}
 
@@ -19,7 +19,7 @@ With $P_{fixed}$ the fixed consumption profile of the device.
 
 \subsubsection{Thermal load}
 
-For defining the thermal load, we have a consumption profile in the form of a range between a minimum and a maximum consumption. We define the maximum consumption as the optimal comfort one. We will then define a variable that compute the gap between the optimal comfort and the chosen power consumption, that will be noted $p_comfort$. So we have two constraints defined as follows:
+For defining the thermal load, we have a consumption profile in the form of a range between a minimum and a maximum consumption. We define the maximum consumption as the optimal comfort one. We will then define a variable that compute the gap between the optimal comfort and the chosen power consumption, that will be noted $p_{comfort}$. So we have two constraints defined as follows:
 \begin{align} 
     P_{min}[t] <= P_{device}[t] <= P_{max}[t], \forall t \in T \\
     p_{comfort}[t] = P_{max}[t] - P_{device}[t], \forall t \in T
@@ -28,9 +28,9 @@ For defining the thermal load, we have a consumption profile in the form of a ra
 \subsubsection{White goods}
 
 For the white goods, we have a fixed cycle that can be shifted in time. So we define a variable 
-$x_{start}$ that will be equal to 1 if the cycle starts at time step $t$ and 0 otherwise. This time, we define a comfort time start as well as a time range in which the cycle needs to be executed. Using this, the gap between the $start_{time}$ and the $t_{wanted}$ is defined as a time comfort variable. In order to use a MILP (mixed integer linear programming) model, we defined two variables in order to define 
+$x_{start}$ that will be equal to 1 if the cycle starts at time step $t$ and 0 otherwise. This time, we define a comfort time start as well as a time range in which the cycle needs to be executed. Using this, the gap between the starting time and the time wanted ($t_{wanted}$) is defined as a time comfort variable ($t_{comfort}$). In order to use a MILP (mixed integer linear programming) model, we defined two variables in order to define 
 $t_{comfort}$, $t_{plus}$ and $t_{minus}$ for positive and negative gap values. 
-A parameter $P_{cycle}$ that will be equal to the consumption profile of the cycle is given. For doing so, we define a new time set $T_{cycle}$ that will be all the possible time step of the cycle. The confort constraints are then defined as follows:
+A parameter $P_{cycle}$ that will be equal to the consumption profile of the cycle is given. For doing so, we define a new time set $T_{cycle}$ that will be all the possible time step of the cycle. The comfort constraints are then defined as follows:
 
 
 \begin{align}
@@ -42,7 +42,7 @@ A parameter $P_{cycle}$ that will be equal to the consumption profile of the cyc
 These constraints ensure that the cycle is executed once and that the comfort time variable is equal to the gap between the wanted time and the actual start time of the cycle.
 
 
-And then the power consumption constraints are defined as follows:
+Then the power consumption constraints are defined as follows:
 \begin{align}
     &S_{power}[t] = [max(t-cycle, t_{wanted}-t_{range}), min(t, t_{wanted}+t_{range}-cycle)] \\
     &P_{device}[t] = \sum_{p \in S_{power}[t]} P_{cycle}[t-p] * x_{start}[p], \forall t \in T \\
@@ -57,8 +57,8 @@ Finally, comes the battery storage and electric vehicle. The only difference bet
         
 \begin{align}
     &E[t] = E[t-1] + P_{plus}[t] * \eta_{charge} - P_{minus}[t] / \eta_{dcharge}, \forall t \in T_{Home} \\
-    &P_{device}[t] = P_{plus}[t] - P_{minus}[t], \forall t \in T \\
-    &P_{plus}[t] + P_{minus}[t] = 0, \forall t \in T_{NotHome} \label{eq:plus_minus}\\
+    &P_{device}[t] = P_{plus}[t] - P_{minus}[t], \forall t \in T_{Home} \\
+    &P_{plus}[t] + P_{minus}[t] = 0, \forall t \in T_{Home} \label{eq:plus_minus}\\
     &P_{device}[t] = 0, \forall t \in T_{NotHome} \\
     &E[0] = E_0 \\
     &E[end] = E_{end} \\
@@ -79,19 +79,19 @@ The first step here is to define the link between the different devices and the 
 \end{align}
 With $D$ the set of devices of the member other than the battery storage and electric vehicle, and $D_{battery}$ the set of battery storage and electric vehicle devices.
 
-For the power exchange with the community, we will differentiate between the power coming from the community and the power sent to the community. At the member scale, we will not consider in the power balance the power sent to the community, as it will be done by the community model. So for the power balance we consider only the power coming from the community defined as $P_{received}$. Also, we enable exchanges within the community only from the produced energy, coming either from the power source or from the battery storage. For doing so, agains we need to define a positive and negative variable for the battery power ($P_bat+$ and $P_bat-$). So we define a variable $P_{shared}$ and a variable $P_{self}$ for the shared and self-consumed power respectively. The constraints for sharing power are defined as follows:
+For the power exchange with the community, we will differentiate between the power coming from the community and the power sent to the community. Also, we enable exchanges within the community only from the produced energy, coming either from the power source or from the battery storage. For doing so, again we need to define a positive and negative variable for the battery power ($P_{bat+}$ and $P_{bat-}$). So we define a variable $P_{shared}$ and a variable $P_{self}$ for the shared and self-consumed power respectively. The constraints for sharing power are defined as follows:
 
 \begin{equation}
     P_{shared}[t] + P_{self}[t] = P_{prod}[t] + P_{bat-}[t], \forall t \in T
 \end{equation}
 
-For the power exchanged with the grid, we want to differentiate between the power bought from the grid and the power sold to the grid for the objective function definition. So we define two variables $P_{grid+}$ and $P_{grid-}$ for the power bought and sold to the grid respectively. The power balance constraint is defined as follows:
+At the member scale, we will not consider in the power balance the power sent to the community, as it will be done at the community level. So for the power balance we consider only the power coming from the community defined as $P_{received}$. For the power exchanged with the grid, we want to differentiate between the power bought from the grid and the power sold to the grid for the objective function definition. So we define two variables $P_{grid+}$ and $P_{grid-}$ for the power bought and sold to the grid respectively. The power balance constraint is defined as follows:
 \begin{equation}
     P_{grid+}[t] - P_{grid-}[t] = P_{member}[t] + P_{bat+}[t] - P_{received}[t] - P_{self}[t], \forall t \in T
 \end{equation}
 We can also sum the comfort variables of the different devices to have a global comfort variable for the member.
 
-By adding the objective functions to this model, we can complete the fully decentralized optimization model. These objective functions will be defined just after \ref{objective_function}.
+By adding the objective functions to this model, we can complete the fully decentralized optimization model. These objective functions will be defined just after in \ref{objective_function}.
 
 \subsection{Community model}
 The community model is built by aggregating the different member models and adding the constraints related to the power exchange between the members. For doing so, we need to define a variable $P_{exchange}[i, j, t]$ for each time step $t$ and each pair of members $i$ and $j$. It represents the power sent from member $i$ to member $j$ at time step $t$ and is positive. The power balance constraints for the community are then defined as follows: 
@@ -107,27 +107,27 @@ With $M$ the set of members of the community. The power consumed, produced as we
 
 In \cite{these_sorel}, they use a vector of the sociological profile of each member of the community in order to define a multi-objective optimization problem as explained in the state of the art \ref{section_sociological_profiles}. In this work, we reproduced this idea. They used a vector of 3 dimensions, the economic dimension, the environmental dimension and the independence dimension.
 
-The way the model is built here, the independence dimension is linked very strongly to the other two dimensions, that already try to maximize the self-consumption of the members. Furthermore, the flexibility could very well impact the comfort of the members. So the idea has been to replace the independence dimension by a comfort dimension.
+The way the model is built here, the independence dimension is linked very strongly to the other two dimensions, that already try to maximize the self-consumption of the members. Furthermore, the flexibility could very well impact the comfort of the members. So the idea has been to replace the independence dimension by a comfort dimension. The independence dimension could be more interesting in a model as defined in \cite{article_5} where the community become disconnected from the main grid.
 
-For the economic dimension, it is easy to define the objective function as the cost of the energy bought from the grid minus the revenue from the energy sold to the grid. For the environmental dimension, we can associate to the grid energy a carbon footprint and another one to the energy consumed by the devices. For example, in France, the carbon footprint of the grid energy is in average equal to 40 gCO2/kWh in 2022 while for the same year, in France, the carbon footprint of the energy produced by a PV panel is around 25 gCO2/kWh. Of course a more accurate study could be done by looking exactly at the installation of each member of the community. The main point is that the two objective functions defines like this will remain linear and we could imagine some coefficient to be able to compare the two dimensions more easily. Here are the equations of such objective functions :
+For the economic dimension, it is easy to define the objective function as the cost of the energy bought from the grid minus the revenue from the energy sold to the grid. For the environmental dimension, we can associate to the grid energy a carbon footprint and another one to the energy consumed by the devices. For example, in France, the carbon footprint of the grid energy is in average equal to 40 gCO2/kWh in 2022 while for the same year, in France, the carbon footprint of the energy produced by a PV panel is around 25 gCO2/kWh. Of course a more accurate study could be done by looking exactly at the installation of each member of the community. The main point is that the two objective functions defined like this will remain linear and that we could imagine some coefficient to be able to compare the two dimensions easily. Here are the equations of such objective functions :
 
 \begin{align}
     ElectricityPrice = \sum_{t \in T} &\big(P_{grid+}[t] \cdot BuyPrice[t] - P_{grid-}[t] \cdot SellPrice[t] 
-        \nonumber \\&+ P_{received} \cdot CommunityPrice\big)  \\
+        \nonumber \\&+ P_{received} \cdot CommunityPrice\big)  \\ \nonumber \\
     CarbonFootprint = \sum_{t \in T} &\big(P_{grid+}[t] \cdot GridFootprint[t] \nonumber \\
     &+ P_{self}[t] \cdot SelfFootprint 
         \nonumber\\
         &+ P_{shared}[t] \cdot SharedFootprint\big)
 \end{align}
-With $BuyPrice$ and $SellPrice$ the price of buying and selling energy to the grid, $CommunityPrice$ the price of energy received from the community, $GridFootprint$, $SelfFootprint$, and $SharedFootprint$ the carbon footprint of the grid energy, the self-consumed energy, and the shared energy respectively. For simplicity sake, the prices and carbone footprint have been considered as constant over time. In this study we took $CommunityPrice$ equal to 0. But this number could be used to study the effect of dynamic pricing within the community for example.
+With $BuyPrice$ and $SellPrice$ the price of buying and selling energy to the grid, $CommunityPrice$ the price of energy received from the community, $GridFootprint$, $SelfFootprint$, and $SharedFootprint$ the carbon footprint of the grid energy, the self-consumed energy, and the shared energy respectively. For simplicity's sake, the prices and carbon footprint have been considered as constant over time. In this study we took $CommunityPrice$ equal to 0. But this number could be used to study the effect of dynamic pricing within the community for example.
 
 
-But for the comfort, we have the choice about how to build the objective function, but it seems to be harder to compare with the other. The choice made in this work is to make a linear objective function, and then we will compute before each optimization references value of the community (or the member) for each dimension. We will then divide the value of the objective function by this reference value in order to pass in per unit values and be able to compare the objective functions. So here is the equation of the comfort objective function:
+But for the comfort, we have the choice about how to build the objective function, and it seems to be harder to compare with the other. The choice made in this work is to make a linear objective function, and then we will compute before each optimization references value of the community (or the member) for each dimension. We will then divide the value of the objective function by this reference value in order to pass in per unit values and be able to compare the objective functions. So here is the equation of the comfort objective function:
 
 \begin{equation}
     Comfort = \sum_{t \in T} p_{comfort}[t] \cdot coef_p + t_{comfort} \cdot coef_t \cdot |T|
 \end{equation}
-With $coef_p$ and $coef_t$ the coefficient for the power comfort and time comfort respectively. The choice of these coefficients will determine the importance of each term in the comfort objective function. For the moment they have been set to 1 each.
+With $coef_p$ and $coef_t$ the coefficient for the power comfort and time comfort respectively. The choice of these coefficients will determine the importance of each term in the comfort objective function. For this study they have been set to 1 each.
 
 Finally the complete objective function is defined as follows:
 
