@@ -21,7 +21,7 @@ With $P_{fixed}$ the fixed consumption profile of the device.
 
 For defining the thermal load, we have a consumption profile in the form of a range between a minimum and a maximum consumption. We define the maximum consumption as the optimal comfort one. We will then define a variable that compute the gap between the optimal comfort and the chosen power consumption, that will be noted $p_{comfort}$. So we have two constraints defined as follows:
 \begin{align} 
-    P_{min}[t] <= P_{device}[t] <= P_{max}[t], \forall t \in T \\
+    P_{min}[t] \leq P_{device}[t] \leq P_{max}[t], \forall t \in T \\
     p_{comfort}[t] = P_{max}[t] - P_{device}[t], \forall t \in T
 \end{align}
 

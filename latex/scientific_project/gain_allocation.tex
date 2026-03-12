@@ -23,6 +23,10 @@ With $Objective_{centralized, S}$ the value of the objective function in the cen
 
 The full optimization process is shown in figure \ref{fig:gain_allocation}. 
 
+\begin{equation}
+    x_i = \frac{|Objective_{decentralized,i}|}{\sum\limits_{j \in N}{|Objective_{decentralized,j}|}} Gain 
+\end{equation}
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{allocation_schema.png}

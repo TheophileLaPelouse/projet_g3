@@ -16,13 +16,15 @@
 \usepackage{amssymb}
 \usepackage{comment}
 \usepackage{subcaption}
+\usepackage{array}
+\usepackage{makecell}
 % \usepackage{csquotes}
 \geometry{margin=0.75in}
 
 \title{\vspace{0cm} % Adjust vertical spacing
     \makebox[\textwidth]{%
         \includegraphics[height=2cm]{logo_centrale.png} \hfill
-        \includegraphics[height=2cm]{logo_gecad.png}%
+        \includegraphics[height=2cm]{L2EP_logo.png}%
     }\\[3cm] % Add space below the logos
     % \sffamily % Use sans-serif font for the title
     Modeling Flexibility Services in Energy Communities with Multi Agent System\\
@@ -32,14 +34,14 @@
     % \rmfamily % Revert to serif font after the title
 }
 
-\author{\textbf{Théophile Mounier} \\\\ Supervisors : Bruno Francois (Centrale Lille), João Soares (GECAD)}
-\date{}
+\author{\textbf{Théophile Mounier} \\\\ Supervisor : Bruno Francois}
+\date{2025-2026}
 
 
 \begin{document}
 
 \maketitle
-% \newpage
+\newpage
 \renewcommand*\contentsname{Summary}
 \setcounter{tocdepth}{2}
 \tableofcontents
@@ -91,5 +93,13 @@
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
+
+\newpage
+\appendix
+\section{Informatic code}
+\input{code.tex}
+% Add your appendix content here
+
+
 
 \end{document}
