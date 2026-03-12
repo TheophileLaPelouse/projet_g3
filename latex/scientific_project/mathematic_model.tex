@@ -58,14 +58,13 @@ Finally, comes the battery storage and electric vehicle. The only difference bet
 \begin{align}
     &E[t] = E[t-1] + P_{plus}[t] * \eta_{charge} - P_{minus}[t] / \eta_{dcharge}, \forall t \in T_{Home} \\
     &P_{device}[t] = P_{plus}[t] - P_{minus}[t], \forall t \in T_{Home} \\
-    &P_{plus}[t] + P_{minus}[t] = 0, \forall t \in T_{Home} \label{eq:plus_minus}\\
     &P_{device}[t] = 0, \forall t \in T_{NotHome} \\
     &E[0] = E_0 \\
     &E[end] = E_{end} \\
     &E[t] \geq E_{min}[t], \forall t \in T_{leave} \\
     &E[t] = E[t'] - \Delta E, \forall t \in T_{back} \text{ and } t' \text{equal to the corresponding leave time}
 \end{align}
-With $E$ the state of charge of the battery, $P_{plus}$ and $P_{minus}$ the charge and discharge power. They are here to differentiate between the charging and discharging phase and \ref{eq:plus_minus} makes sure there is no charge and discharge at the same time. Those values are positive. $\eta_{charge}$ and $\eta_{dcharge}$ the charge and discharge efficiency, $E_0$ the initial state of charge, $E_{end}$ the final state of charge. $E_{min}$ is the list of the minimum state of charge at the different leave time, $\Delta E$ is the energy needed for the trip and $T_{leave}$ and $T_{back}$ are the time steps of leaving and coming back home. Finally, $T_{Home}$ and $T_{NotHome}$ are the time steps when the electric vehicle is at home or not respectively. 
+With $E$ the state of charge of the battery, $P_{plus}$ and $P_{minus}$ the charge and discharge power. They are here to differentiate between the charging and discharging phase. Those values are positive. $\eta_{charge}$ and $\eta_{dcharge}$ the charge and discharge efficiency, $E_0$ the initial state of charge, $E_{end}$ the final state of charge. $E_{min}$ is the list of the minimum state of charge at the different leave time, $\Delta E$ is the energy needed for the trip and $T_{leave}$ and $T_{back}$ are the time steps of leaving and coming back home. Finally, $T_{Home}$ and $T_{NotHome}$ are the time steps when the electric vehicle is at home or not respectively. 
 
 \subsection{Prosumer model}
 
