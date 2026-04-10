@@ -190,6 +190,8 @@ print(pyo.value(community.enviro))
 print(pyo.value(community.confort))
 #%% Repartition of gains 
 
+from commu_opti.plotting.plot_functions import plot_3d, plot_hexagon_objective
+
 values = community.members_gains
 labels = [f"Member {member.id}" for member in community.members]
 
@@ -245,8 +247,22 @@ to_plot = {
                 },
     "labels" : labels,
     "dimension" : 1,
+    "circle" : True, 
+    "ylim" : 0.5, 
     "title" : "Proportional allocation compared to production and battery capacity rates",
-    "save_path" : os.path.join(folder_path, "proportional_vs_production_battery.eps")
+    "save_path" : os.path.join(folder_path, "proportional_vs_production_battery.eps"), 
+    "options" : {
+        "Proportional allocation" : {
+            "plot" : {
+                "color" : "black",
+                "linewidth" : 1.5, 
+                },
+            "fill" : {
+                "color" : "black", 
+                "alpha" : 0.25
+                }
+            }
+        }
 }
 fig2, ax2 = plot_hexagon_objective(**to_plot)
 
@@ -258,8 +274,22 @@ to_plot = {
                 },  
     "labels" : labels,
     "dimension" : 1,
+    "circle" : True, 
+    "ylim" : 0.5, 
     "title" : "Shapley allocation compared to production and battery capacity rates",
-    "save_path" : os.path.join(folder_path, "shapley_vs_production_battery.eps")
+    "save_path" : os.path.join(folder_path, "shapley_vs_production_battery.eps"), 
+    "options" : {
+        "Shapley allocation" : {
+            "plot" : {
+                "color" : "black",
+                "linewidth" : 1.5, 
+                },
+            "fill" : {
+                "color" : "black", 
+                "alpha" : 0.25
+                }
+            }
+        }
 }
 fig3, ax3 = plot_hexagon_objective(**to_plot)
 
@@ -271,8 +301,22 @@ to_plot = {
                 },  
     "labels" : labels,
     "dimension" : 1,
+    "circle" : True, 
+    "ylim" : 0.5, 
     "title" : "Equal allocation compared to production and battery capacity rates",
-    "save_path" : os.path.join(folder_path, "equal_vs_production_battery.eps")
+    "save_path" : os.path.join(folder_path, "equal_vs_production_battery.eps"), 
+    "options" : {
+        "Equal allocation" : {
+            "plot" : {
+                "color" : "black",
+                "linewidth" : 1.5, 
+                },
+            "fill" : {
+                "color" : "black", 
+                "alpha" : 0.25
+                }
+            }
+        }
 }
 fig4, ax4 = plot_hexagon_objective(**to_plot)
 

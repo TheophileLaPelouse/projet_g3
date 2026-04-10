@@ -1,5 +1,5 @@
 from . import pyo
-from .utils import calc_auto, calc_eco, calc_enviro, calc_pena_pow, calc_confort
+from .utils import calc_auto, calc_eco, calc_eco_total, calc_enviro, calc_invest_cost, calc_pena_pow, calc_confort
 from ..opti.solving import solve_model
 from ..plotting.plot_functions import plot_power_curves, plot_hexagon_objective
 import itertools
@@ -208,6 +208,8 @@ class community :
         # print("DEFINING VALUES")
         # print("MEMBER IDS : ", members_id)
         
+        # Useful for analysis but not necessary for the optimization.
+        
         self.mod.P_grid_plus = pyo.Expression(self.time_set, rule=lambda m, t: sum(
             self.members[i].P_grid_plus[t] for i in members_id))
         
@@ -222,6 +224,14 @@ class community :
         
         self.mod.P_self = pyo.Expression(self.time_set, rule=lambda m, t: sum(
             self.members[i].P_self[t] for i in members_id))
+        
+        self.mod.PV_surface = pyo.Expression(rule=lambda m: sum(
+            self.members[i].PV_surface for i in members_id))
+        self.mod.PV_present = kwargs.get("PV_present", 1)
+        
+        self.mod.bat_cap = pyo.Expression(rule=lambda m: sum(
+            self.members[i].bat_cap for i in members_id))
+        self.mod.bat_present = kwargs.get("bat_present", 1)
         
         # Antisymetry of exchange so we can count all of them positively and divide by 2.
         self.mod.P_commu_exchange = pyo.Expression(self.time_set, rule=lambda m, t: sum(
@@ -242,37 +252,51 @@ class community :
         # self.mod.t_excess = pyo.Expression(self.time_set, rule=lambda m, t: sum(
         #     sum(self.members[i].t_excess[t]  for i in members_id)))
         
-        # print("COMMUNITY VALUES DEFINED")
+        #
         
-        functions = kwargs.get("functions", []) # format = [f(pcons, pbat, pexchange pgrid), ...]
-        eco_args = kwargs.get("eco", {})
-        eco_args["ref"] = self.ref_values[0]
+        # functions = kwargs.get("functions", []) # format = [f(pcons, pbat, pexchange pgrid), ...]
+        # eco_args = kwargs.get("eco", {})
+        # eco_args["ref"] = self.ref_values[0]
+        # eco_args["total_time"] = self.total_time
         
-        enviro_args = kwargs.get("enviro", {})
-        enviro_args["ref"] = self.ref_values[1]
+        # enviro_args = kwargs.get("enviro", {})
+        # enviro_args["ref"] = self.ref_values[1]
         
-        auto_args = kwargs.get("auto", {})
-        auto_args["ref"] = self.ref_values[2]
+        # auto_args = kwargs.get("auto", {})
+        # auto_args["ref"] = self.ref_values[2]
         
-        confort_args = kwargs.get("confort", {})
-        confort_args["ref"] = self.ref_values[3]
+        # confort_args = kwargs.get("confort", {})
+        # confort_args["ref"] = self.ref_values[3]
         
         # pena_args = kwargs.get("pena", {})
         # pena_args["ref"] = self.ref_values[4]
         
         
-        self.mod.obj = pyo.Objective(expr=calc_eco(self.mod.P_grid_plus, self.mod.P_grid_minus, self.mod.P_commu_exchange, **eco_args)*self.socio[0]
-                                     + calc_enviro(self.mod.P_grid_plus, self.mod.P_commu_exchange,self.mod.P_self, **enviro_args)*self.socio[1]
-                                     + calc_auto(self.mod.P_grid_plus, **auto_args)*self.socio[2]
-                                     + sum(f(self.mod.P_cons, self.mod.P_bat, self.mod.P_commu_exchange, self.mod.P_grid_plus, self.mod.P_grid_minus) for f in functions)
-                                     + calc_confort(self.mod.p_confort, self.mod.t_confort, **confort_args)*self.socio[3]
-                                    #  + calc_pena_pow(self.mod.p_excesses_l, self.mod.p_excesses_u, **pena_args)*self.socio[3]
-                                     )
+        # self.mod.obj = pyo.Objective(expr=calc_eco_total(self.P_grid_plus, self.P_grid_minus, self.P_exchange, self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args)*self.socio[0]
+        #                              + calc_enviro(self.mod.P_grid_plus, self.mod.P_commu_exchange,self.mod.P_self, **enviro_args)*self.socio[1]
+        #                              + calc_auto(self.mod.P_grid_plus, **auto_args)*self.socio[2]
+        #                              + sum(f(self.mod.P_cons, self.mod.P_bat, self.mod.P_commu_exchange, self.mod.P_grid_plus, self.mod.P_grid_minus) for f in functions)
+        #                              + calc_confort(self.mod.p_confort, self.mod.t_confort, **confort_args)*self.socio[3]
+        #                             #  + calc_pena_pow(self.mod.p_excesses_l, self.mod.p_excesses_u, **pena_args)*self.socio[3]
+        #                              )
         
-        self.price = pyo.Expression(expr=calc_eco(self.mod.P_grid_plus, self.mod.P_grid_minus, self.mod.P_commu_exchange, **eco_args))
-        self.enviro = pyo.Expression(expr=calc_enviro(self.mod.P_grid_plus, self.mod.P_commu_exchange,self.mod.P_self, **enviro_args))
-        self.auto = pyo.Expression(expr=calc_auto(self.mod.P_grid_plus, **auto_args))
-        self.confort = pyo.Expression(expr=calc_confort(self.mod.p_confort, self.mod.t_confort, **confort_args))
+        self.mod.obj = pyo.Objective(expr=sum(self.members[i].mod_member.obj_expr for i in members_id))
+        
+        self.price = pyo.Expression(expr=sum(self.members[i].price for i in members_id))
+        self.price_operation = pyo.Expression(expr=sum(self.members[i].price_operation for i in members_id))
+        self.price_invest = pyo.Expression(expr=sum(self.members[i].price_invest for i in members_id))
+        self.enviro = pyo.Expression(expr=sum(self.members[i].enviro for i in members_id))
+        self.auto = pyo.Expression(expr=sum(self.members[i].auto for i in members_id))
+        self.confort = pyo.Expression(expr=sum(self.members[i].confort for i in members_id))
+        
+        # self.price = pyo.Expression(expr=calc_eco_total(self.P_grid_plus, self.P_grid_minus, self.P_exchange, self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args))
+        # self.price_operation = pyo.Expression(expr=calc_eco(self.mod.P_grid_plus, self.mod.P_grid_minus, self.mod.P_commu_exchange, **eco_args))
+        # self.price_invest = pyo.Expression(expr=calc_invest_cost(self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args))
+        
+        
+        # self.enviro = pyo.Expression(expr=calc_enviro(self.mod.P_grid_plus, self.mod.P_commu_exchange,self.mod.P_self, **enviro_args))
+        # self.auto = pyo.Expression(expr=calc_auto(self.mod.P_grid_plus, **auto_args))
+        # self.confort = pyo.Expression(expr=calc_confort(self.mod.p_confort, self.mod.t_confort, **confort_args))
         
         self.mod.price = self.price
         self.mod.enviro = self.enviro

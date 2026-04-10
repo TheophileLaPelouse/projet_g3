@@ -1,1 +1,2 @@
-import peak
+from peak import Agent, OneShotBehaviour
+

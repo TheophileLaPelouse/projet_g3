@@ -1,11 +1,11 @@
 from numpy import mod
 from . import pyo
-from .utils import calc_auto, calc_eco, calc_enviro, calc_pena_pow, calc_confort
+from .utils import calc_auto, calc_eco, calc_enviro, calc_pena_pow, calc_confort, calc_eco_total, calc_invest_cost
 from ..opti.solving import solve_model
 from ..plotting.plot_functions import plot_power_curves
 
 class member : 
-    def __init__(self, devices, production_profile, socio, id_, **kwargs) :
+    def __init__(self, devices, irradiance_profile, socio, id_, **kwargs) :
         
         method =kwargs.get("method", "centralized")   
         self.name = kwargs.get("name", f"member_{id_}")      
@@ -19,12 +19,20 @@ class member :
         self.kwargs = kwargs
         self.deltat = kwargs.get("deltat", 1)
         self.total_time = kwargs.get("total_time", 24)
-        self.P_prod = production_profile
+        self.P_disponible = irradiance_profile
+        self.P_prod = None
         self.P_cons = None 
         self.P_bat = None
         self.P_exchange = None
+        self.PV_surface = None
+        self.PV_present = False
+        self.bat_present = False
+        self.bat_cap = None        
         self.devices = devices 
         # print("START BUILDING")
+        
+        self.def_irradiance = kwargs.get("def_irradiance", True)
+        
         if not method == "centralized" : 
             self.build_model(**kwargs)
             
@@ -69,7 +77,7 @@ class member :
         def rule_pcons(m, t) : 
             Pcons = 0
             for d in self.devices : 
-                if not hasattr(d, "E") : 
+                if not (hasattr(d, "E") or d.__class__.__name__ == "PV") : 
                     Pcons += d.mod.Pcons[t]
             return Pcons
         def rule_pbat(m, t) :
@@ -78,6 +86,13 @@ class member :
                 if hasattr(d, "E") : 
                     Pbat += d.mod.Pcons[t] 
             return Pbat
+        
+        def rule_p_prod(m, t) : 
+            Pprod = 0
+            for d in self.devices : 
+                if d.__class__.__name__ == "PV": 
+                    Pprod -= d.mod.Pcons[t]
+            return Pprod
        
         def rule_p_confort(m, t) : 
             confort = 0
@@ -91,11 +106,31 @@ class member :
                 if hasattr(d.mod, "t_confort_lvl") : 
                     confort += d.mod.t_confort_lvl
             return confort
+        
+        def rule_PV_surface(m) : 
+            surface = 0
+            for d in self.devices : 
+                if d.__class__.__name__ == "PV" : 
+                    surface += d.mod.PV_surface
+            return surface
+        
+        def bat_cap_rule(m) : 
+            cap = 0
+            for d in self.devices : 
+                if d.__class__.__name__ == "battery" : 
+                    cap += d.capacity
+            return cap
        
         self.P_cons = pyo.Expression(self.time_index, rule=rule_pcons)
         self.P_bat = pyo.Expression(self.time_index, rule=rule_pbat)
+        self.PV_surface = pyo.Expression(rule=rule_PV_surface)
+        self.bat_cap = pyo.Expression(rule=bat_cap_rule)
+        self.P_prod = pyo.Expression(self.time_index, rule=rule_p_prod)
         self.mod_member.P_cons = self.P_cons 
         self.mod_member.P_bat = self.P_bat
+        self.mod_member.PV_surface = self.PV_surface
+        self.mod_member.bat_cap = self.bat_cap
+        self.mod_member.P_prod = self.P_prod
         
         self.mod_member.p_confort = pyo.Expression(self.time_index, rule=rule_p_confort)
         self.mod_member.t_confort = pyo.Expression(rule=rule_t_confort)
@@ -145,7 +180,14 @@ class member :
         self.mod_member.time_index = self.time_index
         
         for k in range(len(self.devices)) : 
+            if self.devices[k].__class__.__name__ == "PV" and self.def_irradiance : 
+                self.devices[k].update_irradiance(self.P_disponible)
+                self.PV_present = True
+            if self.devices[k].__class__.__name__ == "battery" :
+                self.bat_present = True
+            
             setattr(self.mod_member, f"device{k}", self.devices[k].mod)
+            
         
         # print("ADDING DEVICES DONE")
         
@@ -217,6 +259,7 @@ class member :
         functions = kwargs.get("functions", []) # format = [f(pcons, pbat, pexchange pgrid), ...]
         eco_args = kwargs.get("eco", {})
         eco_args["deltat"] = self.deltat
+        eco_args["total_time"] = self.total_time
         eco_args["ref"] = self.ref_values[0]
         
         enviro_args = kwargs.get("enviro", {})
@@ -231,19 +274,25 @@ class member :
         # pena_args = kwargs.get("pena", {})
         # pena_args["ref"] = self.ref_values[4]
         
-        self.mod_member.obj = pyo.Objective(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args)*self.socio_commu[0]
+        self.mod_member.obj_expr = pyo.Expression(expr=calc_eco_total(self.P_grid_plus, self.P_grid_minus, self.P_exchange, self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args)*self.socio_commu[0]
                                      + calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args)*self.socio_commu[1]
                                      + calc_auto(self.P_grid_plus, **auto_args)*self.socio_commu[2]
                                      + calc_confort(self.mod_member.p_confort, self.mod_member.t_confort, **confort_args)*self.socio_commu[3]
                                      + sum(f(self.P_cons, self.P_bat, self.P_exchange, self.P_grid_plus, self.P_grid_minus) for f in functions)/self.ref_values[-1]
                                     #  + calc_pena_pow(self.mod_member.p_excess_l, self.mod_member.p_excess_u, **pena_args)
                                      )
-        self.price = pyo.Expression(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args))
+        self.mod_member.obj = pyo.Objective(expr=self.mod_member.obj_expr, sense=pyo.minimize)
+        
+        self.price = pyo.Expression(expr=calc_eco_total(self.P_grid_plus, self.P_grid_minus, self.P_exchange, self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args))
+        self.price_operation = pyo.Expression(expr=calc_eco(self.P_grid_plus, self.P_grid_minus, self.P_exchange, **eco_args))
+        self.price_invest = pyo.Expression(expr=calc_invest_cost(self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args))
         self.enviro = pyo.Expression(expr=calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args))
         self.auto = pyo.Expression(expr=calc_auto(self.P_grid_plus, **auto_args))
         self.confort = pyo.Expression(expr=calc_confort(self.mod_member.p_confort, self.mod_member.t_confort, **confort_args))
         
         self.mod_member.price = self.price
+        self.mod_member.price_operation = self.price_operation
+        self.mod_member.price_invest = self.price_invest
         self.mod_member.enviro = self.enviro
         self.mod_member.auto = self.auto
         self.mod_member.confort = self.confort

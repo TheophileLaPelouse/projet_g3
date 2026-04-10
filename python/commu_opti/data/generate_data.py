@@ -488,11 +488,12 @@ def create_random_agent(profile, deltat=1, forced_devices = set()) :
                         "p_range" : parameters[key]["p_range"], 
                         "E_range" : [soc_min, soc_max],
                         "time_home" : [[t0, tend]],
-                        "E0s" : Emin,
-                        "E_min" : Emin, 
+                        "E0" : Emin[0], 
+                        # "E0s" : Emin,
+                        # "E_min" : Emin, 
                         "E_end" : Emin[0]
                     }, 
-                    "type" : "EV"
+                    "type" : "batterie"
                 }
         elif key == "PV_generation" :
             surface = rd.uniform(0.1, 1)*parameters[key]["surface"]

@@ -51,12 +51,17 @@ def plot_hexagon_objective(values, title="Radar Objective Visualization", **kwar
     # Create the plot
     fig, ax = plt.subplots(subplot_kw=dict(polar=True))
     
+    
     CB_color_cycle = ['#377eb8', '#ff7f00', '#4daf4a',
                   '#f781bf', '#a65628', '#984ea3',
                   '#999999', '#e41a1c', '#dede00']
     colors = kwargs.get("colors", CB_color_cycle)
     alpha = kwargs.get('alpha', 0.25)
+    options = kwargs.get("options", {})
     dimension = kwargs.get("dimension", 0)
+    circle = kwargs.get("circle", False)
+    ylim = kwargs.get('ylim', None)
+    
     c = 0
     for key in values :
         color = colors[c % len(colors)]
@@ -67,8 +72,13 @@ def plot_hexagon_objective(values, title="Radar Objective Visualization", **kwar
             vals = [values[key][key2][dimension] for key2 in values[key]]
         else : 
             vals = [values[key][key2] for key2 in values[key]]
-        ax.plot(angles + [angles[0]], vals + [vals[0]], color=color, linewidth=1, label=key)
-        ax.fill(angles, vals, color=color, alpha=alpha)
+        
+        if key in options : 
+            ax.plot(angles + [angles[0]], vals + [vals[0]], **options[key]["plot"], label=key)
+            ax.fill(angles, vals, **options[key]["fill"])   
+        else :
+            ax.plot(angles + [angles[0]], vals + [vals[0]], color=color, linewidth=1, label=key)
+            ax.fill(angles, vals, color=color, alpha=alpha)
 
     # Add labels to the vertices
     labels = kwargs.get("labels", [key for key in values[first_key]])
@@ -76,7 +86,17 @@ def plot_hexagon_objective(values, title="Radar Objective Visualization", **kwar
     ax.set_xticklabels(labels)
 
     # Set the range for the radial axis
-    # ax.set_ylim(0, 1)
+    if ylim :
+        ax.set_ylim(0, ylim)
+    
+    # Set gridlines
+    ax.grid(True)
+    
+    if circle : 
+        theta = np.linspace(0, 2 * np.pi, 1000)  # Generate angles for a full circle
+        r = np.full_like(theta, 1/n)  # Set the radius to 0.2
+        ax.plot(theta, r, "--", color='red', linewidth=1)  # Draw the circle
+
 
     # Add title and legend
     ax.set_title(title, va='bottom')

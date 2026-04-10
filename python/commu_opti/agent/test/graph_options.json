@@ -1,0 +1,40 @@
+{
+    "title": {
+      "text": "Consumption"
+    },
+    "tooltip": {
+      "trigger": "axis"
+    },
+    "legend": {
+      "data": ["Consumption", "Generation"]
+    },
+    "grid": {
+      "left": "3%",
+      "right": "4%",
+      "bottom": "3%",
+      "containLabel": true
+    },
+    "toolbox": {
+      "feature": {
+        "saveAsImage": {}
+      }
+    },
+    "xAxis": {
+      "boundaryGap": false
+    },
+    "yAxis": {
+      "type": "value"
+    },
+    "series": [
+      {
+        "name": "Consumption",
+        "type": "line",
+        "data": []
+      },
+      {
+        "name": "Generation",
+        "type": "line",
+        "data": []
+      }
+    ]
+  }

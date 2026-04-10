@@ -24,6 +24,7 @@ import commu_opti.community.device as d
 import commu_opti.community.community as comm
 
 prod_profile = [0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30, 30, 30, 30, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+
 # prod_profile = [30 for k in range(24)]
 # Objets
 # machine à laver 
@@ -74,16 +75,34 @@ fixed_load_device = d.fixed(**fixed_load, **options)
 
 print("\nFIXED DEFINED\n")
 
-def define_devices(wash_mach, therm_load, EV_load, fixed_load, options) :
+pv_prod = {
+    "irradiance_profile" : prod_profile, 
+    "surface" : None,
+    "eff" : 0.2,
+    }
+
+pv_prod_device = d.PV(**pv_prod, **options)
+
+print("\nPV PRODUCTION DEFINED\n")
+
+bat_load = {
+    "p_range" : [-10, 10], 
+    "E_range" : None, 
+    }
+
+bat_load_device = d.battery(**bat_load, **options)
+
+print("\nBATTERY DEVICE DEFINED\n")
+
+def define_devices(wash_mach, therm_load, EV_load, fixed_load, pv_prod, bat_load, options) :
     device_wash_mach = d.white_good(**wash_mach, **options)
     device_therm = d.flex(**therm_load, **options)
     device_EV = d.EV(**EV_load)
     device_fixed = d.fixed(**fixed_load, **options)
+    device_PV = d.PV(**pv_prod, **options)
+    device_bat = d.battery(**bat_load, **options)
     
-    return device_wash_mach, device_therm, device_EV, device_fixed
-
-
-
+    return device_wash_mach, device_therm, device_EV, device_fixed, device_PV, device_bat
 
 
 community = comm.community([])
@@ -123,6 +142,14 @@ test_cases = {
     #     "socio" : [1, 0, 0, 1], 
     #     "id" : 1
     # },
+    # "bat" : {
+    #     "name" : "bat_test", 
+    #     "devices": [],
+    #     "community": community,
+    #     "prod_profile" : prod_profile, 
+    #     "socio" : [1, 0, 0, 1], 
+    #     "id" : 1
+    #     }, 
     "all_devices": {
         "name": "all_test",
         "devices": [],
@@ -134,10 +161,15 @@ test_cases = {
     }
 
 member_options = {
+    "calc_ref" : False, 
     "eco" : {
-        "cost_grid_buy" : 10, 
+        "cost_grid_buy" : 1000, 
         "cost_grid_sell" : 0,
         "cost_ex" : 0, 
+        "cost_PV" : 100, 
+        "PV_min" : 0,
+        "cost_bat" : 100,
+        "bat_min" : 0,
     },
     "enviro" : {
         "carbone_grid" : 15,
@@ -156,25 +188,28 @@ member_options = {
     "bat_exchange" : True,
 }
 
-
 # Run tests from dictionaries
 for case_name, case_params in test_cases.items():
     print(f"{case_name} test")
-    device_wash_mach, device_therm, device_EV, device_fixed = define_devices(wash_mach, therm_load, EV_load, fixed_load,options)
+    device_wash_mach, device_therm, device_EV, device_fixed, device_PV, device_bat = define_devices(wash_mach, therm_load, EV_load, fixed_load, pv_prod, bat_load,options)
     
     if case_name=="wash_machine" : 
-        case_params['devices'] = [device_wash_mach]
+        case_params['devices'] = [device_wash_mach, device_PV]
     elif case_name=="thermostat" :
-        case_params['devices'] = [device_therm]
+        case_params['devices'] = [device_therm, device_PV]
     elif case_name=="EV" :
-        case_params['devices'] = [device_EV]
+        case_params['devices'] = [device_EV, device_PV]
+    elif case_name=="bat" : 
+        case_params['devices'] = [device_bat, device_PV]
     elif case_name=="all_devices" :
         case_params['devices'] = []
         case_params['devices'].append(device_wash_mach)
         case_params['devices'].append(device_therm)
-        case_params['devices'].append(device_EV)
+        # case_params['devices'].append(device_EV)
+        case_params['devices'].append(device_PV)
+        case_params['devices'].append(device_bat)
     elif case_name=="fixed_profile" :
-        case_params['devices'] = [device_fixed]
+        case_params['devices'] = [device_fixed, device_PV]
 
     
     test_member = memb.member(case_params['devices'], 
@@ -190,20 +225,31 @@ for case_name, case_params in test_cases.items():
     # test_member.mod_member.P_grid_minus.display()
     # test_member.mod_member.obj.pprint()
     print(f"{case_name} test solved")
-    print(f"Results : price = {pyo.value(test_member.price)}, enviro = {pyo.value(test_member.enviro)}, auto = {pyo.value(test_member.auto)}, confort = {pyo.value(test_member.confort)}")
+    print(f"""Results : price = {pyo.value(test_member.price)} (investissement : {pyo.value(test_member.price_invest)}, operation : {pyo.value(test_member.price_operation)})
+          enviro = {pyo.value(test_member.enviro)}, auto = {pyo.value(test_member.auto)}, confort = {pyo.value(test_member.confort)}""")
     test_member.mod_member.write('member.lp', io_options={'symbolic_solver_labels': True})
     
 to_plot = {
     "powers" : {
         "P_grid" : [pyo.value(test_member.P_grid_plus[t]-test_member.P_grid_minus[t]) for t in range(test_member.total_time)],
         "P_bat" : [pyo.value(test_member.P_bat[t]) for t in range(test_member.total_time)],
+        "P_bat_plus" : [pyo.value(test_member.devices[-1].P_plus[t]) for t in range(test_member.total_time)],
+        "P_bat_minus" : [pyo.value(test_member.devices[-1].P_minus[t]) for t in range(test_member.total_time)],
+        # "P_bat_cons" : [pyo.value(test_member.devices[-1].Pcons[t]) for t in range(test_member.total_time)],
         "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
-        "P_exchange" : [pyo.value(test_member.P_exchange[t]) for t in range(test_member.total_time)],
-        "P_prod" : prod_profile
+        # "P_exchange" : [pyo.value(test_member.P_exchange[t]) for t in range(test_member.total_time)],
+        "P_prod" : [pyo.value(test_member.P_prod[t]) for t in range(test_member.total_time)],
+    }
+}
+
+to_plot2 = {
+    "powers" : {
+        "E" : [pyo.value(test_member.devices[-1].E[t]) for t in range(test_member.total_time)],   
     }
 }
     
 test_member.plot_power_curves(**to_plot)
+test_member.plot_power_curves(**to_plot2)
 
 #%% Community test 
 
@@ -215,14 +261,19 @@ options = {"total_time" : 5, "deltat" : 1}
 
 members_dico = {
     "member1" : {
-        "power_profile" : [20 for t in range(5)], 
         "devices" : [
             {
                 "type" : "fixed", 
                 "parameters" : {
                     "power_profile" : [10 for t in range(options["total_time"])]
                 }
-            }
+            }, 
+            {
+                "type" : "PV", 
+                "parameters" : {
+                    "irradiance_profile" : [20 for t in range(5)],
+                    }
+                }
         ],
         "socio" : [1, 1, 1, 1],
         "id" : 1

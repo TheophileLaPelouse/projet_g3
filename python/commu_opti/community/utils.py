@@ -42,4 +42,29 @@ def calc_confort(p_confort, t_confort, **kwargs) :
     ref_value = kwargs.get("ref", 1)
     return (sum(p_confort[t]*coef_p  for t in range(len(p_confort))) 
             + t_confort*coef_t*len(p_confort))/ref_value
+
+def calc_invest_cost(PV_cap, PV_present, bat_cap, bat_present, **kwargs) : 
+    cost_PV = kwargs.get("cost_PV", 1000)
+    cost_PV_min = kwargs.get("PV_min", 0)
+    cost_bat = kwargs.get("cost_bat", 500)
+    cost_bat_min = kwargs.get("bat_min", 0)
+    ref_value = kwargs.get("ref", 1)
+    discount_rate = kwargs.get("discount_rate", 0.05)
+    lifetime = kwargs.get("lifetime", 20)
+    simul_time = kwargs.get("total_time", 24)
+    
+    PV_price = invest_cost(cost_PV*PV_cap + PV_present*cost_PV_min, discount_rate, lifetime)
+    bat_price = invest_cost(cost_bat*bat_cap + bat_present*cost_bat_min, discount_rate, lifetime)
+    return (PV_price + bat_price)/ref_value*(simul_time/8760)
+
+def calc_eco_total(Pgrid_plus, Pgrid_minus, Pex, PV_cap, PV_present, bat_cap, bat_present, **kwargs) :
+    eco = calc_eco(Pgrid_plus, Pgrid_minus, Pex, **kwargs)
+    invest = calc_invest_cost(PV_cap, PV_present, bat_cap, bat_present, **kwargs)
+    return (eco + invest)
+    
+    
+def invest_cost(initial_cost, discount, lifetime) : 
+    return initial_cost*discount/(1-(1+discount)**(-lifetime))
+
+
     
