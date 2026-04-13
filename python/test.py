@@ -213,7 +213,6 @@ for case_name, case_params in test_cases.items():
 
     
     test_member = memb.member(case_params['devices'], 
-                              case_params['prod_profile'], 
                               case_params['socio'],  
                               case_params['id'], **member_options)
     # community = comm.community([test_member])
@@ -236,7 +235,7 @@ to_plot = {
         "P_bat_plus" : [pyo.value(test_member.devices[-1].P_plus[t]) for t in range(test_member.total_time)],
         "P_bat_minus" : [pyo.value(test_member.devices[-1].P_minus[t]) for t in range(test_member.total_time)],
         # "P_bat_cons" : [pyo.value(test_member.devices[-1].Pcons[t]) for t in range(test_member.total_time)],
-        "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
+        # "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
         # "P_exchange" : [pyo.value(test_member.P_exchange[t]) for t in range(test_member.total_time)],
         "P_prod" : [pyo.value(test_member.P_prod[t]) for t in range(test_member.total_time)],
     }
@@ -257,7 +256,7 @@ import commu_opti.community.device as d
 import commu_opti.community.community as comm
 import commu_opti.community.member as memb
 
-options = {"total_time" : 5, "deltat" : 1}
+options = {"total_time" : 5, "deltat" : 1, "def_irradiance" : False}
 
 members_dico = {
     "member1" : {
@@ -272,6 +271,7 @@ members_dico = {
                 "type" : "PV", 
                 "parameters" : {
                     "irradiance_profile" : [20 for t in range(5)],
+                    "surface" : 5,
                     }
                 }
         ],
@@ -279,7 +279,6 @@ members_dico = {
         "id" : 1
     }, 
     "member2" : {
-        "power_profile" : [0 for t in range(5)], 
         "devices" : [
             {
                 "type" : "fixed", 
@@ -333,7 +332,7 @@ for key in members_dico :
     devices = []
     for device in m["devices"] : 
         devices.append(getattr(d, device["type"])(**device["parameters"], **options))
-    member = memb.member(devices, m["power_profile"], m["socio"], m["id"], calc_ref = False, **options)
+    member = memb.member(devices, m["socio"], m["id"], calc_ref = False, **options)
     members.append(member)
     c += 1
 co = comm.community(members, **options, **coef_options)

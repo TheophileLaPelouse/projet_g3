@@ -50,7 +50,7 @@ def calc_invest_cost(PV_cap, PV_present, bat_cap, bat_present, **kwargs) :
     cost_bat_min = kwargs.get("bat_min", 0)
     ref_value = kwargs.get("ref", 1)
     discount_rate = kwargs.get("discount_rate", 0.05)
-    lifetime = kwargs.get("lifetime", 20)
+    lifetime = kwargs.get("lifetime", 10)
     simul_time = kwargs.get("total_time", 24)
     
     PV_price = invest_cost(cost_PV*PV_cap + PV_present*cost_PV_min, discount_rate, lifetime)

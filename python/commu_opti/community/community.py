@@ -86,7 +86,7 @@ class community :
                     member = self.members[k]
                     member.add_to_community(self, k)
                     member.ref_values = self.ref_values
-                    member.build_model(**member.kwargs)
+                    member.build_model(**kwargs)
                     member.mod_member.obj.deactivate()
             # print("MEMBER MODELS BUILT")
             self.build_centralized(**kwargs)
@@ -224,6 +224,9 @@ class community :
         
         self.mod.P_self = pyo.Expression(self.time_set, rule=lambda m, t: sum(
             self.members[i].P_self[t] for i in members_id))
+        
+        self.mod.P_prod = pyo.Expression(self.time_set, rule=lambda m, t: sum(
+            self.members[i].P_prod[t] for i in members_id))
         
         self.mod.PV_surface = pyo.Expression(rule=lambda m: sum(
             self.members[i].PV_surface for i in members_id))

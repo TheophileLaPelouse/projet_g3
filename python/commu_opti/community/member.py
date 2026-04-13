@@ -5,7 +5,7 @@ from ..opti.solving import solve_model
 from ..plotting.plot_functions import plot_power_curves
 
 class member : 
-    def __init__(self, devices, irradiance_profile, socio, id_, **kwargs) :
+    def __init__(self, devices, socio, id_, **kwargs) :
         
         method =kwargs.get("method", "centralized")   
         self.name = kwargs.get("name", f"member_{id_}")      
@@ -19,7 +19,7 @@ class member :
         self.kwargs = kwargs
         self.deltat = kwargs.get("deltat", 1)
         self.total_time = kwargs.get("total_time", 24)
-        self.P_disponible = irradiance_profile
+        self.P_disponible = kwargs.get("irradiance_profile", [0 for t in range(self.total_time)])
         self.P_prod = None
         self.P_cons = None 
         self.P_bat = None
@@ -31,7 +31,7 @@ class member :
         self.devices = devices 
         # print("START BUILDING")
         
-        self.def_irradiance = kwargs.get("def_irradiance", True)
+        self.def_irradiance = kwargs.get("def_irradiance", False)
         
         if not method == "centralized" : 
             self.build_model(**kwargs)

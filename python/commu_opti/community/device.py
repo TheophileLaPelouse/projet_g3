@@ -424,6 +424,9 @@ class battery(device) :
             self.p_range_bat = (-p_range_rate*self.capacity, p_range_rate*self.capacity)
         else : 
             self.E_range = E_range # [Emin, Emax]
+            self.p_range_bat = p_range
+            self.capacity = pyo.Param(initialize=self.E_range[1], within=pyo.NonNegativeReals)
+            self.mod.capacity = self.capacity
         
         # + custom constraints soc : E_min <= E <= E_max + suivie E(t) = E(t - 1) + P delta t
         self.charge_eff = kwargs.get('charge_eff', 0.98)

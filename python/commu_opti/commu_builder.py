@@ -1,4 +1,4 @@
-from .community.device import device, white_good, flex, EV, fixed, AoN
+from .community.device import PV, battery, device, white_good, flex, EV, fixed, AoN
 from .community.member import member
 from .community.community import community
 
@@ -28,6 +28,10 @@ def define_devices(list_args, **kwargs) :
             devices.append(device(**args["parameters"], **kwargs))
         elif args["type"] == "AoN" :
             devices.append(AoN(**args["parameters"], **kwargs))
+        elif args["type"] == "PV" :
+            devices.append(PV(**args["parameters"], **kwargs))
+        elif args["type"] == "battery" :
+            devices.append(battery(**args["parameters"], **kwargs))
     return devices
 
 def define_members(list_args) : 
