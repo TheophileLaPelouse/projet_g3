@@ -51,28 +51,8 @@ class member :
     
     def calc_profile(self, deltat=1) : 
         """
-        Take all the devices and compute the consumed power over time as well as the total value
+        Take all the devices and compute the consumed power, the produced power, the power exchange to batteries.
         """
-        # Pcons = pyo.Var(self.time_index, within=pyo.Reals, initialize=[0 for t in self.time_index])
-        # Pbat = pyo.Var(self.time_index, within=pyo.Reals, initialize=[0 for t in self.time_index])
-        # p_excess_l = pyo.Var(self.time_index, within=pyo.Reals, initialize=[0 for t in self.time_index])
-        # p_excess_u = pyo.Var(self.time_index, within=pyo.Reals, initialize=[0 for t in self.time_index])
-        
-        # self.P_bat = Pbat
-        # self.P_cons = Pcons
-        # self.mod_member.P_bat = Pbat
-        # self.mod_member.P_cons = Pcons
-        # self.mod_member.p_excess_u = p_excess_u
-        # self.mod_member.p_excess_l = p_excess_l
-        
-        # for d in self.devices : 
-        #     for t in self.time_index : 
-        #         if hasattr(d.mod, "Pbat") : 
-        #             Pbat[t] += d.mod.Pbat[t]
-        #         else : 
-        #             Pcons[t] += d.mod.Pcons[t]
-        #         p_excess_l[t] += d.mod.p_excess_l_all[t]
-        #         p_excess_u[t] += d.mod.p_excess_u_all[t]
                 
         def rule_pcons(m, t) : 
             Pcons = 0
@@ -136,23 +116,10 @@ class member :
         self.mod_member.t_confort = pyo.Expression(rule=rule_t_confort)
         
         
-         # def rule_pexcess_l(m, t):
-        #     p_excess_l = 0
-        #     for d in self.devices:
-        #         p_excess_l += d.mod.p_excess_l_all[t]
-        #     return p_excess_l
-        # def rule_pexcess_u(m, t):
-        #     p_excess_u = 0
-        #     for d in self.devices:
-        #         # p_excess_u += d.mod.p_excess_u_all[t]
-        #     return p_excess_u
-        
-        # self.mod_member.p_excess_l = pyo.Expression(self.time_index, rule=rule_pexcess_l)
-        # self.mod_member.p_excess_u = pyo.Expression(self.time_index, rule=rule_pexcess_u)
-        
-        
-        
     def fetch_P_exchange(self, **kwargs) :
+        """
+        Fetch the power coming from the grid   
+        """
         method = kwargs.get("method", "centralized")
         if method == "centralized" : 
             def simple_power_exchange_sum(m, t) : 
@@ -170,8 +137,9 @@ class member :
 
     def build_model(self, **kwargs) :
         """
-        Du coup on aggrège tous les modèles comme on a vu dans test, 
-        et on crée fonction d'objectif en fonction de puissance consommée
+        Aggregate the devices model. And define the power balance contraints. 
+        P_surplus is the power going to the grid, 
+        P_self is the power used for self consumption that is not coming from or to the grid.
         """ 
         
         self.clear_model()
@@ -271,9 +239,6 @@ class member :
         confort_args = kwargs.get("confort", {})
         confort_args["ref"] = self.ref_values[3]
         
-        # pena_args = kwargs.get("pena", {})
-        # pena_args["ref"] = self.ref_values[4]
-        
         self.mod_member.obj_expr = pyo.Expression(expr=calc_eco_total(self.P_grid_plus, self.P_grid_minus, self.P_exchange, self.PV_surface, self.PV_present, self.bat_cap, self.bat_present, **eco_args)*self.socio_commu[0]
                                      + calc_enviro(self.P_grid_plus, self.P_exchange,self.P_self, **enviro_args)*self.socio_commu[1]
                                      + calc_auto(self.P_grid_plus, **auto_args)*self.socio_commu[2]
@@ -297,7 +262,6 @@ class member :
         self.mod_member.auto = self.auto
         self.mod_member.confort = self.confort
         
-        # print("OBJECTIVE FUNCTION DEFINED")
         
         return
     
@@ -316,10 +280,14 @@ class member :
         self.fix_device_values()
         
         solver = kwargs.get("ref_solver", "gurobi")
+        lp_ref = kwargs.get("ref_lp", False)
+        if lp_ref :
+            self.mod_member.write('member.lp', io_options={'symbolic_solver_labels': True})
         results = solve_model(self.mod_member, solver, **kwargs.get("ref_options", {}))
         self.ref_values = [pyo.value(self.price), pyo.value(self.enviro), pyo.value(self.auto), pyo.value(self.confort)]
         # print("REF VALUES CALCULATED : ", self.ref_values)
-    
+
+        flag = str(results['Solver'][0]['Status']) == 'ok'
         for k in range(len(self.ref_values)) :
             if self.ref_values[k] == 0 and k != 3 : 
                 print("WARNING : REF VALUE IS 0, PROBLEM IN NORMALIZATION, REF VALUES : ", self.ref_values)
@@ -329,9 +297,10 @@ class member :
             if self.ref_values[k] == 0 and k == 3 : 
                 self.ref_values[k] = 1 # Confort is not studied in this case 
         
-        self.unfix_device_values()
-        self.clear_model()
-        return 
+        if not kwargs.get("no_clear_ref", False) :
+            self.unfix_device_values()
+            self.clear_model()
+        return flag
                     
     def fix_device_values(self) : 
         # Fix the variables 
@@ -342,7 +311,7 @@ class member :
                     div = (d.t_use[instant][0] + getattr(d.mod, f"set_t0_{instant}").at(1))/2
                     starting_time = int(div)
                     if starting_time != div and div!=0 : 
-                        starting_time += 1
+                        starting_time += 1 # Attention
                     diff = d.t_use[instant][0] - starting_time
                     # print("diff", diff)
                     if diff == 0 : 
@@ -398,6 +367,14 @@ class member :
                 for t in d.mod.t_set : 
                     getattr(d.mod, "allocated_power")[t].unfix()
                     
+    def drop_device(self, k) :
+        if k < 0 : 
+            k = len(self.devices) + k  
+        dev = self.devices.pop(k)
+        delattr(self.mod_member, f"device{k}")
+        self.clear_model()
+        return dev
+
     def create_agent(self) :
         return
     

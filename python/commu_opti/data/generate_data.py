@@ -62,16 +62,16 @@ def generate_n_profile(n, profile, **kwargs) :
         changed = set()
         changed.add(new_seq[0][0])
         changed.add(new_seq[-1][1])
-        print("cahnged avant ", changed)
+        # print("cahnged avant ", changed)
         for i in range(n_event) : 
             interval = new_seq[random_i[i]]
             length = interval[1] - interval[0]
             lmin = 1/lengths_rate*length
             lmax = lengths_rate*length
-            print("lmin", lmin, "lmax", lmax)
+            # print("lmin", lmin, "lmax", lmax)
             new_length = max(min(int(rd.uniform(lmin, lmax+1)), total_time), new_seq[0][0])
-            print("random i", i,"length", length, "new_length", new_length)
-            print("changed", changed, "interval", interval)
+            # print("random i", i,"length", length, "new_length", new_length)
+            # print("changed", changed, "interval", interval)
             if not (interval[0] in changed and interval[1] in changed) : 
                 if interval[0] in changed and not (interval[1] in changed) : 
                     new_start = interval[0]
@@ -97,18 +97,18 @@ def generate_n_profile(n, profile, **kwargs) :
                     new_seq[random_i[i]+1][0] = new_end
                     changed.add(new_start)
                     changed.add(new_end)
-                print("new_start", new_start, "new_end", new_end)
+                # print("new_start", new_start, "new_end", new_end)
         
         profiles[k] = [[new_seq[i][0], new_seq[i][1], new_seq[i][2]] for i in range(n_event)]
         
-        print("new_seq", new_seq)
+        # print("new_seq", new_seq)
         # Now we place random breaks in the big profile blocks
         
         for i in range(n_event) :
             interval = new_seq[i]
             length = interval[1] - interval[0]
             break_length = int(rd.uniform(0, lengths_breaks_rate*length))
-            print("break_length", break_length, "length", length)
+            # print("break_length", break_length, "length", length)
             if not (length - break_length <= 0) : 
                 start_break = rd.randint(interval[0], interval[1]-break_length)
                 for t in range(interval[0], start_break) : 
@@ -295,26 +295,30 @@ parameters = {
     "EV_zoe" : EV_parameters_zoe,
     "EV_rav4" : EV_parameters_rav4,
     "batterie" : batterie_parameters,
-    "PV_generation" : PV_generation_parameters  
+    "PV" : PV_generation_parameters  
 }
 
-def create_random_agent(profile, deltat=1, forced_devices = set()) :
+def create_random_agent(profile, deltat=1, forced_devices = set(), list_devices = None) :
     # For now no battery, PV or EV.
     t0, tend = profile[0][0], profile[-1][1]
-    
+    total_time = tend - t0
     devices_param = {}
     keys_to_pop = []
-    grosse_techno = ["EV_zoe", "EV_rav4", "batterie", "PV_generation"]
+    grosse_techno = ["EV_zoe", "EV_rav4", "batterie"]
     interdiction = []
     for key in parameters :
-        if ((key not in interdiction and parameters[key].get("proba", 1) > rd.rand()) 
-            or key in forced_devices) :
-            devices_param[key] = {}
-            if key in grosse_techno : 
-                devices_param["PV_generation"] = {}
+        if not list_devices :
+            if ((key not in interdiction and parameters[key].get("proba", 1) > rd.rand()) 
+                or key in forced_devices) :
+                devices_param[key] = {}
+                if key in grosse_techno : 
+                    devices_param["PV"] = {}
+        else : 
+            if key in list_devices : 
+                devices_param[key] = {}
             
     for key in devices_param :
-        print(key)
+        # print(key)
         if key=="heater" : 
             confort = rd.randint(18, 23)
             p_range = []
@@ -495,12 +499,15 @@ def create_random_agent(profile, deltat=1, forced_devices = set()) :
                     }, 
                     "type" : "batterie"
                 }
-        elif key == "PV_generation" :
+        elif key == "PV" :
             surface = rd.uniform(0.1, 1)*parameters[key]["surface"]
             efficiency = rd.uniform(0.6, 1.2)*parameters[key]["efficiency"]
             devices_param[key] = {
-                "parameters" : {"production_profile": generate_prod_profile(parameters[key]["irradiance"], surface, efficiency)},
-                "type" : "production"
+                "parameters" : {"irradiance_profile": [parameters[key]["irradiance"][k%24] for k in range(total_time)],
+                                "surface" : surface,
+                                "eff" : efficiency
+                                },
+                "type" : "PV"
             }
             
     for key in keys_to_pop : 
@@ -616,6 +623,6 @@ if __name__ == "__main__" :
     new_prof = profiles[0]
     agent = create_random_agent(new_prof, forced_devices={"batterie", "EV_zoe"})
     
-    print(agent['EV_zoe'])
+    # print(agent['EV_zoe'])
     # print(new_prof, {k : agent['heater']['parameters']['power_range'][k] for k in range(len(agent['heater']['parameters']['power_range']))})
     

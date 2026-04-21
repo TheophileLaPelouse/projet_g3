@@ -3,6 +3,7 @@ from .community.member import member
 from .community.community import community
 
 def define_devices(list_args, **kwargs) : 
+    # print("devices", list_args)
     devices = []
     c = 0
     for dico in list_args :
@@ -34,12 +35,12 @@ def define_devices(list_args, **kwargs) :
             devices.append(battery(**args["parameters"], **kwargs))
     return devices
 
-def define_members(list_args) : 
+def define_members(list_args, **kwargs) : 
     members = []
     print("Defining members")
     for args in list_args : 
         devices = define_devices(args["devices"], **args["device_options"])
-        members.append(member(devices=devices, **args["parameters"]))
+        members.append(member(devices=devices, **args["parameters"], **kwargs))
     return members
 
 def define_community(members, **kwargs) : 

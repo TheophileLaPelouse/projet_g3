@@ -46,9 +46,6 @@ class community :
         calc_ref = kwargs.get("calc_ref", True)
         if calc_ref :
             self.calc_ref_values(**kwargs)
-            self.build_model(**kwargs)
-        
-            
         self.build_model(**kwargs)
         
     def build_model(self, **kwargs) : 

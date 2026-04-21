@@ -1,6 +1,6 @@
 import sys
 sys.path.append("/Users/theophilemounier/Desktop/git/projet_g3/python")
-sys.path.append("/home/theophile/Desktop/git/projet_g3/python")
+
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 
@@ -30,22 +30,11 @@ prod_profile = [0, 0, 0, 0, 0, 0, 0, 0, 30, 30, 30, 30, 30, 30, 30, 30, 0, 0, 0,
 # machine à laver 
 
 options = {"total_time" : 24, "deltat" : 1}
-# wash_mach = {'cycle_length' : [6], 
-#              'power_needed' : [3], 
-#              "start_pref" : [16], 
-#              "time_range" : [[-24, 24]], 
-#              }
-
-wash_mach = {'cycle_length': [3],
-  'power_needed': [2000.0],
-  'start_pref': [22],
-  'time_range': [[0, 0]]
-  }
-# wash_mach = {'cycle_length' : [0.5], 
-#              'power_needed' : [3], 
-#              "start_pref" : [18], 
-#              "time_range" : [[0, 0]], 
-#              }
+wash_mach = {'cycle_length' : [6], 
+             'power_needed' : [3], 
+             "start_pref" : [18], 
+             "time_range" : [[-24, 24]], 
+             }
 
 device_wash_mach = d.white_good(**wash_mach, **options)
 
@@ -63,21 +52,12 @@ print("\nTHERMAL LOAD DEFINED\n")
 
 # EV
 
-# EV_load = {
-#     "p_range" : [-10000, 10000], 
-#     "E_range" : [8360.0, 41800.0],
-#     "time_home" : [[0, 20], [22, 24]], 
-#     "E0s" : [25080.0, -12825.25809394293],
-#     "E_min" : [21185.25809394293, 25080.0], 
-#     "E_end" : 21185.25809394293
-# }
-
 EV_load = {
-    "p_range" : [-10, 10], 
-    "E_range" : [8, 40],
-    "time_home" : [[4, 10], [18, 24]], 
-    "E0s" : [25, -13],
-    "E_min" : [20, 25], 
+    "p_range" : [-5, 5], 
+    "E_range" : [0, 60],
+    "time_home" : [[0, 4], [8, 24]], 
+    "E0s" : [30, 10],
+    "E_min" : [40, 0], 
     "E_end" : 20
 }
 
@@ -130,14 +110,14 @@ community = comm.community([])
 import commu_opti.community.member as memb
 # Create dictionaries for different test cases
 test_cases = {
-    "wash_machine": {
-        "name": "wash_test",
-        "devices": [],
-        "community": community,
-        "prod_profile" : prod_profile, 
-        "socio" : [1, 0, 0, 0.01], 
-        "id" : 1
-    },
+    # "wash_machine": {
+    #     "name": "wash_test",
+    #     "devices": [],
+    #     "community": community,
+    #     "prod_profile" : prod_profile, 
+    #     "socio" : [1, 0, 0, 0.01], 
+    #     "id" : 1
+    # },
     # "thermostat": {
     #     "name": "therm_test",
     #     "devices": [],
@@ -170,14 +150,14 @@ test_cases = {
     #     "socio" : [1, 0, 0, 1], 
     #     "id" : 1
     #     }, 
-    # "all_devices": {
-    #     "name": "all_test",
-    #     "devices": [],
-    #     "community": community,
-    #     "prod_profile" : prod_profile, 
-    #     "socio" : [1, 1, 1, 1], 
-    #     "id" : 1
-    # },
+    "all_devices": {
+        "name": "all_test",
+        "devices": [],
+        "community": community,
+        "prod_profile" : prod_profile, 
+        "socio" : [1, 1, 1, 1], 
+        "id" : 1
+    },
     }
 
 member_options = {
@@ -214,8 +194,7 @@ for case_name, case_params in test_cases.items():
     device_wash_mach, device_therm, device_EV, device_fixed, device_PV, device_bat = define_devices(wash_mach, therm_load, EV_load, fixed_load, pv_prod, bat_load,options)
     
     if case_name=="wash_machine" : 
-        # case_params['devices'] = [device_wash_mach, device_PV]
-        case_params['devices'] = [device_wash_mach]
+        case_params['devices'] = [device_wash_mach, device_PV]
     elif case_name=="thermostat" :
         case_params['devices'] = [device_therm, device_PV]
     elif case_name=="EV" :
@@ -253,23 +232,23 @@ to_plot = {
     "powers" : {
         "P_grid" : [pyo.value(test_member.P_grid_plus[t]-test_member.P_grid_minus[t]) for t in range(test_member.total_time)],
         "P_bat" : [pyo.value(test_member.P_bat[t]) for t in range(test_member.total_time)],
-        # "P_bat_plus" : [pyo.value(test_member.devices[-1].P_plus[t]) for t in range(test_member.total_time)],
-        # "P_bat_minus" : [pyo.value(test_member.devices[-1].P_minus[t]) for t in range(test_member.total_time)],
+        "P_bat_plus" : [pyo.value(test_member.devices[-1].P_plus[t]) for t in range(test_member.total_time)],
+        "P_bat_minus" : [pyo.value(test_member.devices[-1].P_minus[t]) for t in range(test_member.total_time)],
         # "P_bat_cons" : [pyo.value(test_member.devices[-1].Pcons[t]) for t in range(test_member.total_time)],
-        "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
+        # "P_cons" : [pyo.value(test_member.P_cons[t]) for t in range(test_member.total_time)], 
         # "P_exchange" : [pyo.value(test_member.P_exchange[t]) for t in range(test_member.total_time)],
         "P_prod" : [pyo.value(test_member.P_prod[t]) for t in range(test_member.total_time)],
     }
 }
 
-# to_plot2 = {
-#     "powers" : {
-#         "E" : [pyo.value(test_member.devices[-1].E[t]) for t in range(test_member.total_time)],   
-#     }
-# }
+to_plot2 = {
+    "powers" : {
+        "E" : [pyo.value(test_member.devices[-1].E[t]) for t in range(test_member.total_time)],   
+    }
+}
     
 test_member.plot_power_curves(**to_plot)
-# test_member.plot_power_curves(**to_plot2)
+test_member.plot_power_curves(**to_plot2)
 
 #%% Community test 
 

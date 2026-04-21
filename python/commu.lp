@@ -2,57 +2,57 @@
 
 min 
 obj:
-+0.006069675852123896 ONE_VAR_CONSTANT
-+0.005 P_exchange_0_0(0)
-+0.005 P_exchange_0_0(1)
-+0.005 P_exchange_0_0(2)
-+0.005 P_exchange_0_0(3)
-+0.005 P_exchange_0_0(4)
-+0.005 P_exchange_1_0(0)
-+0.005 P_exchange_1_0(1)
-+0.005 P_exchange_1_0(2)
-+0.005 P_exchange_1_0(3)
-+0.005 P_exchange_1_0(4)
-+0.05650480864394336 member_0_P_grid_plus(0)
-+0.05650480864394336 member_0_P_grid_plus(1)
-+0.05650480864394336 member_0_P_grid_plus(2)
-+0.05650480864394336 member_0_P_grid_plus(3)
-+0.05650480864394336 member_0_P_grid_plus(4)
--0.00662620216098584 member_0_P_grid_minus(0)
--0.00662620216098584 member_0_P_grid_minus(1)
--0.00662620216098584 member_0_P_grid_minus(2)
--0.00662620216098584 member_0_P_grid_minus(3)
--0.00662620216098584 member_0_P_grid_minus(4)
-+0.005 member_0_P_self(0)
-+0.005 member_0_P_self(1)
-+0.005 member_0_P_self(2)
-+0.005 member_0_P_self(3)
-+0.005 member_0_P_self(4)
-+0.005 P_exchange_0_1(0)
-+0.005 P_exchange_0_1(1)
-+0.005 P_exchange_0_1(2)
-+0.005 P_exchange_0_1(3)
-+0.005 P_exchange_0_1(4)
-+0.005 P_exchange_1_1(0)
-+0.005 P_exchange_1_1(1)
-+0.005 P_exchange_1_1(2)
-+0.005 P_exchange_1_1(3)
-+0.005 P_exchange_1_1(4)
-+0.05650480864394336 member_1_P_grid_plus(0)
-+0.05650480864394336 member_1_P_grid_plus(1)
-+0.05650480864394336 member_1_P_grid_plus(2)
-+0.05650480864394336 member_1_P_grid_plus(3)
-+0.05650480864394336 member_1_P_grid_plus(4)
--0.00662620216098584 member_1_P_grid_minus(0)
--0.00662620216098584 member_1_P_grid_minus(1)
--0.00662620216098584 member_1_P_grid_minus(2)
--0.00662620216098584 member_1_P_grid_minus(3)
--0.00662620216098584 member_1_P_grid_minus(4)
-+0.005 member_1_P_self(0)
-+0.005 member_1_P_self(1)
-+0.005 member_1_P_self(2)
-+0.005 member_1_P_self(3)
-+0.005 member_1_P_self(4)
++0.0009846047499680593 ONE_VAR_CONSTANT
++0.002857142857142857 P_exchange_0_0(0)
++0.002857142857142857 P_exchange_0_0(1)
++0.002857142857142857 P_exchange_0_0(2)
++0.002857142857142857 P_exchange_0_0(3)
++0.002857142857142857 P_exchange_0_0(4)
++0.002857142857142857 P_exchange_1_0(0)
++0.002857142857142857 P_exchange_1_0(1)
++0.002857142857142857 P_exchange_1_0(2)
++0.002857142857142857 P_exchange_1_0(3)
++0.002857142857142857 P_exchange_1_0(4)
++0.06092612482571513 member_0_P_grid_plus(0)
++0.06092612482571513 member_0_P_grid_plus(1)
++0.06092612482571513 member_0_P_grid_plus(2)
++0.06092612482571513 member_0_P_grid_plus(3)
++0.06092612482571513 member_0_P_grid_plus(4)
+-0.006660102635000212 member_0_P_grid_minus(0)
+-0.006660102635000212 member_0_P_grid_minus(1)
+-0.006660102635000212 member_0_P_grid_minus(2)
+-0.006660102635000212 member_0_P_grid_minus(3)
+-0.006660102635000212 member_0_P_grid_minus(4)
++0.002857142857142857 member_0_P_self(0)
++0.002857142857142857 member_0_P_self(1)
++0.002857142857142857 member_0_P_self(2)
++0.002857142857142857 member_0_P_self(3)
++0.002857142857142857 member_0_P_self(4)
++0.002857142857142857 P_exchange_0_1(0)
++0.002857142857142857 P_exchange_0_1(1)
++0.002857142857142857 P_exchange_0_1(2)
++0.002857142857142857 P_exchange_0_1(3)
++0.002857142857142857 P_exchange_0_1(4)
++0.002857142857142857 P_exchange_1_1(0)
++0.002857142857142857 P_exchange_1_1(1)
++0.002857142857142857 P_exchange_1_1(2)
++0.002857142857142857 P_exchange_1_1(3)
++0.002857142857142857 P_exchange_1_1(4)
++0.06092612482571513 member_1_P_grid_plus(0)
++0.06092612482571513 member_1_P_grid_plus(1)
++0.06092612482571513 member_1_P_grid_plus(2)
++0.06092612482571513 member_1_P_grid_plus(3)
++0.06092612482571513 member_1_P_grid_plus(4)
+-0.006660102635000212 member_1_P_grid_minus(0)
+-0.006660102635000212 member_1_P_grid_minus(1)
+-0.006660102635000212 member_1_P_grid_minus(2)
+-0.006660102635000212 member_1_P_grid_minus(3)
+-0.006660102635000212 member_1_P_grid_minus(4)
++0.002857142857142857 member_1_P_self(0)
++0.002857142857142857 member_1_P_self(1)
++0.002857142857142857 member_1_P_self(2)
++0.002857142857142857 member_1_P_self(3)
++0.002857142857142857 member_1_P_self(4)
 
 s.t.
 
@@ -271,46 +271,6 @@ c_u_member_0_device0_p_con_u(4)_:
 +1 member_0_device0_allocated_power(4)
 <= 10
 
-c_e_member_0_device0_p_excess_total_l(0)_:
-+1 member_0_device0_p_excess_l_all(0)
-= 0
-
-c_e_member_0_device0_p_excess_total_l(1)_:
-+1 member_0_device0_p_excess_l_all(1)
-= 0
-
-c_e_member_0_device0_p_excess_total_l(2)_:
-+1 member_0_device0_p_excess_l_all(2)
-= 0
-
-c_e_member_0_device0_p_excess_total_l(3)_:
-+1 member_0_device0_p_excess_l_all(3)
-= 0
-
-c_e_member_0_device0_p_excess_total_l(4)_:
-+1 member_0_device0_p_excess_l_all(4)
-= 0
-
-c_e_member_0_device0_p_excess_total_u(0)_:
-+1 member_0_device0_p_excess_u_all(0)
-= 0
-
-c_e_member_0_device0_p_excess_total_u(1)_:
-+1 member_0_device0_p_excess_u_all(1)
-= 0
-
-c_e_member_0_device0_p_excess_total_u(2)_:
-+1 member_0_device0_p_excess_u_all(2)
-= 0
-
-c_e_member_0_device0_p_excess_total_u(3)_:
-+1 member_0_device0_p_excess_u_all(3)
-= 0
-
-c_e_member_0_device0_p_excess_total_u(4)_:
-+1 member_0_device0_p_excess_u_all(4)
-= 0
-
 c_e_member_0_device0_pow_con(0)_:
 +1 member_0_device0_Pcons(0)
 = 10
@@ -370,46 +330,6 @@ c_u_member_0_device1_p_con_u(3)_:
 c_u_member_0_device1_p_con_u(4)_:
 +1 member_0_device1_allocated_power(4)
 <= 0
-
-c_e_member_0_device1_p_excess_total_l(0)_:
-+1 member_0_device1_p_excess_l_all(0)
-= 0
-
-c_e_member_0_device1_p_excess_total_l(1)_:
-+1 member_0_device1_p_excess_l_all(1)
-= 0
-
-c_e_member_0_device1_p_excess_total_l(2)_:
-+1 member_0_device1_p_excess_l_all(2)
-= 0
-
-c_e_member_0_device1_p_excess_total_l(3)_:
-+1 member_0_device1_p_excess_l_all(3)
-= 0
-
-c_e_member_0_device1_p_excess_total_l(4)_:
-+1 member_0_device1_p_excess_l_all(4)
-= 0
-
-c_e_member_0_device1_p_excess_total_u(0)_:
-+1 member_0_device1_p_excess_u_all(0)
-= 0
-
-c_e_member_0_device1_p_excess_total_u(1)_:
-+1 member_0_device1_p_excess_u_all(1)
-= 0
-
-c_e_member_0_device1_p_excess_total_u(2)_:
-+1 member_0_device1_p_excess_u_all(2)
-= 0
-
-c_e_member_0_device1_p_excess_total_u(3)_:
-+1 member_0_device1_p_excess_u_all(3)
-= 0
-
-c_e_member_0_device1_p_excess_total_u(4)_:
-+1 member_0_device1_p_excess_u_all(4)
-= 0
 
 c_e_member_0_device1_pow_con(0)_:
 +1 member_0_device1_Pcons(0)
@@ -541,46 +461,6 @@ c_u_member_1_device0_p_con_u(4)_:
 +1 member_1_device0_allocated_power(4)
 <= 10
 
-c_e_member_1_device0_p_excess_total_l(0)_:
-+1 member_1_device0_p_excess_l_all(0)
-= 0
-
-c_e_member_1_device0_p_excess_total_l(1)_:
-+1 member_1_device0_p_excess_l_all(1)
-= 0
-
-c_e_member_1_device0_p_excess_total_l(2)_:
-+1 member_1_device0_p_excess_l_all(2)
-= 0
-
-c_e_member_1_device0_p_excess_total_l(3)_:
-+1 member_1_device0_p_excess_l_all(3)
-= 0
-
-c_e_member_1_device0_p_excess_total_l(4)_:
-+1 member_1_device0_p_excess_l_all(4)
-= 0
-
-c_e_member_1_device0_p_excess_total_u(0)_:
-+1 member_1_device0_p_excess_u_all(0)
-= 0
-
-c_e_member_1_device0_p_excess_total_u(1)_:
-+1 member_1_device0_p_excess_u_all(1)
-= 0
-
-c_e_member_1_device0_p_excess_total_u(2)_:
-+1 member_1_device0_p_excess_u_all(2)
-= 0
-
-c_e_member_1_device0_p_excess_total_u(3)_:
-+1 member_1_device0_p_excess_u_all(3)
-= 0
-
-c_e_member_1_device0_p_excess_total_u(4)_:
-+1 member_1_device0_p_excess_u_all(4)
-= 0
-
 c_e_member_1_device0_pow_con(0)_:
 +1 member_1_device0_Pcons(0)
 = 10
@@ -678,31 +558,11 @@ bounds
    -inf <= member_0_device0_allocated_power(2) <= +inf
    -inf <= member_0_device0_allocated_power(3) <= +inf
    -inf <= member_0_device0_allocated_power(4) <= +inf
-   0 <= member_0_device0_p_excess_l_all(0) <= +inf
-   0 <= member_0_device0_p_excess_l_all(1) <= +inf
-   0 <= member_0_device0_p_excess_l_all(2) <= +inf
-   0 <= member_0_device0_p_excess_l_all(3) <= +inf
-   0 <= member_0_device0_p_excess_l_all(4) <= +inf
-   0 <= member_0_device0_p_excess_u_all(0) <= +inf
-   0 <= member_0_device0_p_excess_u_all(1) <= +inf
-   0 <= member_0_device0_p_excess_u_all(2) <= +inf
-   0 <= member_0_device0_p_excess_u_all(3) <= +inf
-   0 <= member_0_device0_p_excess_u_all(4) <= +inf
    -inf <= member_0_device1_allocated_power(0) <= +inf
    -inf <= member_0_device1_allocated_power(1) <= +inf
    -inf <= member_0_device1_allocated_power(2) <= +inf
    -inf <= member_0_device1_allocated_power(3) <= +inf
    -inf <= member_0_device1_allocated_power(4) <= +inf
-   0 <= member_0_device1_p_excess_l_all(0) <= +inf
-   0 <= member_0_device1_p_excess_l_all(1) <= +inf
-   0 <= member_0_device1_p_excess_l_all(2) <= +inf
-   0 <= member_0_device1_p_excess_l_all(3) <= +inf
-   0 <= member_0_device1_p_excess_l_all(4) <= +inf
-   0 <= member_0_device1_p_excess_u_all(0) <= +inf
-   0 <= member_0_device1_p_excess_u_all(1) <= +inf
-   0 <= member_0_device1_p_excess_u_all(2) <= +inf
-   0 <= member_0_device1_p_excess_u_all(3) <= +inf
-   0 <= member_0_device1_p_excess_u_all(4) <= +inf
    -inf <= member_1_device0_Pcons(0) <= +inf
    -inf <= member_1_device0_Pcons(1) <= +inf
    -inf <= member_1_device0_Pcons(2) <= +inf
@@ -713,14 +573,4 @@ bounds
    -inf <= member_1_device0_allocated_power(2) <= +inf
    -inf <= member_1_device0_allocated_power(3) <= +inf
    -inf <= member_1_device0_allocated_power(4) <= +inf
-   0 <= member_1_device0_p_excess_l_all(0) <= +inf
-   0 <= member_1_device0_p_excess_l_all(1) <= +inf
-   0 <= member_1_device0_p_excess_l_all(2) <= +inf
-   0 <= member_1_device0_p_excess_l_all(3) <= +inf
-   0 <= member_1_device0_p_excess_l_all(4) <= +inf
-   0 <= member_1_device0_p_excess_u_all(0) <= +inf
-   0 <= member_1_device0_p_excess_u_all(1) <= +inf
-   0 <= member_1_device0_p_excess_u_all(2) <= +inf
-   0 <= member_1_device0_p_excess_u_all(3) <= +inf
-   0 <= member_1_device0_p_excess_u_all(4) <= +inf
 end

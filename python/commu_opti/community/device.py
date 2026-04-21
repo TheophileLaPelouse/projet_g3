@@ -48,9 +48,7 @@ class device :
         self.dual = pyo.RangeSet(0, 1)
         self.time_total_set = pyo.RangeSet(0, self.total_time - 1)
         self.t_set = pyo.RangeSet(0, len(self.p_range) - 1)  # set of time interval
-        # self.total_time_set = pyo.RangeSet(0, self.total_time)
         self.allocated_power = pyo.Var(self.t_set, within=pyo.Reals)
-        # self.opti_t_use = pyo.Var(self.t_set, self.dual, within=pyo.Reals)  # t0 and tend for each time interval
         
         self.Pcons = pyo.Var(self.time_total_set, within=pyo.Reals, initialize=[0 for t in self.time_total_set])
         self.mod.Pcons = self.Pcons
@@ -59,24 +57,21 @@ class device :
         self.p_excess_l = pyo.Var(self.t_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.t_set])
         self.p_excess_u = pyo.Var(self.t_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.t_set])
         
-        self.p_excess_l_all = pyo.Var(self.time_total_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_total_set])
-        self.p_excess_u_all = pyo.Var(self.time_total_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_total_set])
+        # self.p_excess_l_all = pyo.Var(self.time_total_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_total_set])
+        # self.p_excess_u_all = pyo.Var(self.time_total_set, within=pyo.NonNegativeReals, initialize=[0 for t in self.time_total_set])
         
         
         self.power_score = 0
         self.time_score = 0 
-        # self.p_con_lower = None
-        # self.p_con_u = None
-        # self.t_con_lower = None
-        # self.t_con_u = None
+
 
         mod.dual = self.dual
         mod.t_set = self.t_set
         mod.allocated_power = self.allocated_power
         mod.p_excess_l = self.p_excess_l
         mod.p_excess_u = self.p_excess_u
-        mod.p_excess_l_all = self.p_excess_l_all
-        mod.p_excess_u_all = self.p_excess_u_all
+        # mod.p_excess_l_all = self.p_excess_l_all
+        # mod.p_excess_u_all = self.p_excess_u_all
         
         # For now we fix the excess to 0, we will see later if we add a penalization for it or not.
         for k in self.mod.t_set : 
@@ -93,10 +88,7 @@ class device :
                 mod.opti_t_use[k, 1].fix(self.t_use[k][1])
                 mod.p_excess_l[k].fix(0)
                 mod.p_excess_u[k].fix(0)
-                # mod.t_excess_l[k, 0].fix(0)
-                # mod.t_excess_l[k, 1].fix(0)
-                # mod.t_excess_u[k, 0].fix(0)
-                # mod.t_excess_u[k, 1].fix(0)
+ 
 
         
     def generate_power_constraint(self) : 
@@ -110,25 +102,19 @@ class device :
         self.mod.p_con_l = pyo.Constraint(self.mod.t_set, rule=power_constraint_lower)
         self.mod.p_con_u = pyo.Constraint(self.mod.t_set, rule=power_constraint_upper)
         
-        def full_time_excess_l(mod, t) : 
-            if t in self.dico_used_time : 
-                return mod.p_excess_l_all[t] == mod.p_excess_l[self.dico_used_time[t]]
-            else : 
-                return mod.p_excess_l_all[t] == 0
-        def full_time_excess_u(mod, t) : 
-            if t in self.dico_used_time : 
-                return mod.p_excess_u_all[t] == mod.p_excess_u[self.dico_used_time[t]]
-            else : 
-                return mod.p_excess_u_all[t] == 0
-        self.mod.p_excess_total_l = pyo.Constraint(self.time_total_set, rule=full_time_excess_l)
-        self.mod.p_excess_total_u = pyo.Constraint(self.time_total_set, rule=full_time_excess_u)
+        # def full_time_excess_l(mod, t) : 
+        #     if t in self.dico_used_time : 
+        #         return mod.p_excess_l_all[t] == mod.p_excess_l[self.dico_used_time[t]]
+        #     else : 
+        #         return mod.p_excess_l_all[t] == 0
+        # def full_time_excess_u(mod, t) : 
+        #     if t in self.dico_used_time : 
+        #         return mod.p_excess_u_all[t] == mod.p_excess_u[self.dico_used_time[t]]
+        #     else : 
+        #         return mod.p_excess_u_all[t] == 0
+        # self.mod.p_excess_total_l = pyo.Constraint(self.time_total_set, rule=full_time_excess_l)
+        # self.mod.p_excess_total_u = pyo.Constraint(self.time_total_set, rule=full_time_excess_u)
         
-        # def time_constraint_lower(mod, t_set, dual) :
-        #     return mod.opti_t_use[t_set, dual] - self.t_use[t_set][dual] + mod.t_excess_l[t_set, dual] >= self.t_range[t_set][dual]
-        # def time_constraint_upper(mod, t_set, dual) :
-        #     return self.opti_t_use[t_set, dual] - self.t_use[t_set][dual] <= self.t_range[t_set][dual] + mod.t_excess_u[t_set, dual] 
-        # self.mod.t_con_l = pyo.Constraint(self.mod.t_set, self.mod.dual, rule=time_constraint_lower)
-        # self.mod.t_con_u = pyo.Constraint(self.mod.t_set, self.mod.dual, rule=time_constraint_upper)
         
     def generate_bat_constraint(self, E_end=None) : 
         mod = self.mod
@@ -183,14 +169,17 @@ class device :
             
             def start_constraint(mod, t) : 
                 c = 0 
-                if t == 0 : 
-                    return mod.E[t] == self.E0[c]
+                # if t == 0 : 
+                #     return mod.E[t] == self.E0[c]
                 for i in mod.start_set :
                     if i == t :
                         break 
                     else : 
                         c += 1
-                return mod.E[t] == mod.E[mod.end_set.at(c)] + self.E0[c]
+                if c == 0 : 
+                    return mod.E[t] == self.E0[c]
+                else : 
+                    return mod.E[t] == mod.E[mod.end_set.at(c)] + self.E0[c]
             
             def end_constraint(mod, t) : 
                 c = 0 
@@ -199,7 +188,7 @@ class device :
                         break 
                     else : 
                         c += 1
-                return mod.E[t] == self.E_min[c]
+                return mod.E[t] >= self.E_min[c]
             
             mod.start_con = pyo.Constraint(self.start_set, rule=start_constraint)
             mod.end_con = pyo.Constraint(self.end_set, rule=end_constraint)
@@ -209,30 +198,51 @@ class device :
         
 class white_good(device) : 
     def __init__(self, start_pref, cycle_length, time_range, power_needed, **kwargs) : 
+        """Define a device with a fixed cycle
+
+        Args:
+            start_pref (int): time index of preference for each cycle start
+            cycle_length (int): length of each cycle
+            time_range (list): list of time ranges
+            power_needed (list): list of power needed at each time step
+        """
         power_range = [[power_needed[k], power_needed[k]] for k in range(len(start_pref))]
-        # print("cycle_length", cycle_length)
-        cycle_length = [int(cycle_length[k]/kwargs.get("deltat", 1)) + 1 for k in range(len(cycle_length))]
+        cycle_length = [int(cycle_length[k]/kwargs.get("deltat", 1)) + 1 
+                        if int(cycle_length[k]/kwargs.get("deltat", 1)) != cycle_length[k]/kwargs.get("deltat", 1) 
+                        else int(cycle_length[k]/kwargs.get("deltat", 1)) 
+                        for k in range(len(cycle_length))
+                        ]
+        
+        # print("cycle_length", cycle_length, "start_pref", start_pref)
         time_use = [[start_pref[k], start_pref[k] + cycle_length[k]] for k in range(len(start_pref))]
+        # print("time_use", time_use)
         super().__init__(power_range, time_use, time_range, **kwargs)
+        for times in time_use : 
+            if times[1] > self.total_time : 
+                print("Warning : cycle length too long for the total time, it will be reduced to fit the total time")
+                times[1] = self.total_time
         self.generate_spec_constraint()
         
     def generate_spec_constraint(self) : 
         """
-        On va utiliser 2 contraintes 
+        For each cycle, we have a constraint, we will use 1 constraint for the power 
+        and 2 others to count positively and negatively the time gap with the comfort value
         
-        - sum w_sk = 1 avec w_sk des binaires sur [tmin, tmax]*[0, tmax-tmin]
+        For the power : 
+        S = [max(t - cycle_length, tmin), min(t, tmax - cycle_length)] ([tmin, tmax] being set_t0)
+        sum bin_t0[t]*power_needed for t in S) == Pcons[t] (power_needed is constant during a cycle)
         
-        - sum_{t<=k<=T} sum{t<=s<=t+k} p[2t - s]*w_sk pour la puissance (for all t).
-        
-        Faudra ajouter les excès de temps, mais je pense qu'il faudra se faire mal à la tête donc pour le moment on fait sans.
-        Il pourrait y avoir un truc avec une somme de binaire avec un coef qui vaut 0 dans le time range genre.
+        For the comfort : 
+        starting_time_plus >= sum bin_t0[t]*t for t in set_t0) - start_pref
+        starting_time_minus >= start_pref - sum bin_t0[t]*t for t in set_t0)
+
         """
         
         for instant in self.mod.t_set : 
             # print("\n INSTANT %d" % instant)
             t_min = max(0, self.t_use[instant][0] + self.t_range[instant][0])
             t_max = min(self.t_use[instant][1] + self.t_range[instant][1], self.total_time-1)
-            cycle_length = self.t_use[instant][1] - self.t_use[instant][0]
+            cycle_length = self.t_use[instant][1] - self.t_use[instant][0] - 1
             set_t0 = pyo.RangeSet(t_min,t_max-cycle_length)
             bin_t0 = pyo.Var(set_t0, within=pyo.Boolean)
             starting_time_plus = pyo.Var(within=pyo.NonNegativeReals)
@@ -250,18 +260,19 @@ class white_good(device) :
             # set_t0.display()
             
             setattr(self.mod, f"bin_t_con_{instant}", time_con)
-            starttime_con_plus = pyo.Constraint(expr=sum((t+1)*bin_t0[t] for t in set_t0)- self.t_use[instant][0] <= starting_time_plus)
+            starttime_con_plus = pyo.Constraint(expr=sum(t*bin_t0[t] for t in set_t0)- self.t_use[instant][0] <= starting_time_plus)
             setattr(self.mod, f"starttime_con_plus_{instant}", starttime_con_plus)
-            starttime_con_minus = pyo.Constraint(expr=self.t_use[instant][0] - sum((t+1)*bin_t0[t] for t in set_t0) <= starting_time_minus)
+            starttime_con_minus = pyo.Constraint(expr=self.t_use[instant][0] - sum(t*bin_t0[t] for t in set_t0) <= starting_time_minus)
             setattr(self.mod, f"starttime_con_minus_{instant}", starttime_con_minus)
             
             # set_t0.display()
             def rule(mod, t) :
                 S = 0
-                # print("euh", t, cycle_length + t)
-                for p in range(max(t-cycle_length, t_min), min(t, t_max-cycle_length+1)) :
-                    # print("hmm", p)
-                    S += self.p_range[instant][0]*getattr(mod, f"bin_{instant}")[p]
+                for p in range(max(t-cycle_length, t_min), min(t, t_max-cycle_length)+1) :
+                    S += self.p_range[instant][0]*getattr(mod, f"bin_{instant}")[p] 
+                    # If we need to add power profiles in the cycle, 
+                    # cycle_length - c with c the number of time in the loop would work.
+                    # (Can be proven by induction)
                 return mod.Pcons[t] == S
             pow_con = pyo.Constraint(self.time_total_set, rule=rule)
             setattr(self.mod, f"bin_p_con_{instant}", pow_con)
@@ -273,42 +284,20 @@ class white_good(device) :
         
         self.mod.t_confort_lvl = pyo.Expression(expr = sum(getattr(self.mod, f"confort_con_{instant}") for instant in self.mod.t_set))
             
-            # set_d = pyo.RangeSet(0,t_max-t_min)
-            # bin_t0_d = pyo.Var(set_t0, set_d, within=pyo.Boolean)
-            # time_con= pyo.Constraint(expr=sum(bin_t0_d[t, d] for t in set_t0 for d in set_d)==1)
-            # à vérifier
-            # Pour si on change le cycle_length
-            # def rule(mod, t) : 
-            #     S = 0
-            #     for k in range(t_max-t_min-t+1) :
-            #         for p in range(t, t+k+1) : 
-            #             S += mod.P_range[0]*getattr(mod, f"bin_{instant}")[p, k]
-            #     return (mod.Pcons[t] == S)
-            
-        self.mod.p_con_l.deactivate()
-        self.mod.p_con_u.deactivate()
-        self.mod.p_excess_l.fix(0)
-        self.mod.p_excess_u.fix(0)
         return
             
         
 class fixed(device) :
     def __init__(self, power_profile, **kwargs) : 
-        # One power value per hour
+        """Fixed profile devices, act as a parameter, so one very simple constraint
+        to fix the power at each time step to the value of the profile
+
+        Args:
+            power_profile (list): list of power at each time step
+        """
         total_time = len(power_profile)
         power_range = [[power_profile[k], power_profile[k]] for k in range(total_time)]
         time_use = [[k, k+1] for k in range(total_time)]
-        # for k in range(len(power_profile)) : 
-        #     if k == 0 : 
-        #         power_range.append([power_profile[k], power_profile[k]])
-        #         start_time = k
-        #     if power_profile[k] != power_range[-1][0] : 
-        #         time_use.append([start_time, k-1])
-        #         power_range.append([power_profile[k], power_profile[k]])
-        #         start_time = k
-        # if start_time != len(power_profile) - 1 : 
-        #     time_use.append([start_time, len(power_profile) - 1])
-        # print(time_use, power_range)
         time_range = [[0, 0] for k in range(len(time_use))]
         super().__init__(power_range, time_use, time_range, **kwargs)
         
@@ -319,7 +308,17 @@ class fixed(device) :
         return
     
 class PV(device) : 
-    def __init__(self, irradiance_profile, **kwargs) : 
+    def __init__(self, irradiance_profile, **kwargs) :
+        """PV devices model. If no surface is given in kwargs, then the surface will remain as a variable.
+        The constraint is about computing Pcons using the efficiency of the solar panel 
+        and the surface using the irradiance profile.
+        
+        This model may be not enough if we want to do some robus optimization process.
+
+        Args:
+            irradiance_profile (list): irradiance profile for each time step, in W/m2
+        """
+         
         # One power value per hour
         total_time = len(irradiance_profile)
         eff = kwargs.get("eff", 0.2)
@@ -351,7 +350,15 @@ class PV(device) :
         self.mod.pow_con = pyo.Constraint(self.time_total_set, rule=rule)
     
 class flex(device) : 
-    def __init__(self, power_range, total_time, **kwargs) : 
+    def __init__(self, power_range, **kwargs) : 
+        """flexible devices in the sense that they can be freely commanded within a certain range.
+    
+        Though we associate to them a comfort price for not being at the maximum output on the range.
+
+        Args:
+            power_range (list): list of [min, max] power at each time step
+            total_time (int): total time of the simulation
+        """
         total_time = kwargs.get("total_time", 24)
         self.total_time = total_time
         time_use = [[k, k+1] for k in range(total_time)]
@@ -370,8 +377,12 @@ class flex(device) :
         
 class AoN(device) : 
     def __init__(self, power_needed, time_use_param, **kwargs) :
-        # We will need to check that if we put 2 at the same time it will consume only one.
-        # If AoN relou -> change by flex being the number of on equipment, then almost linear.
+        """Not used yet neither tested yet.
+
+        Args:
+            power_needed (_type_): _description_
+            time_use_param (_type_): _description_
+        """
         total_time = kwargs.get("total_time", 24)
         self.total_time = total_time
         time_use = [[k, k+1] for k in range(total_time)]
@@ -394,8 +405,6 @@ class AoN(device) :
                 if not self.mod.on_off[t].fixed:
                     self.mod.on_off[k].fix(0)
 
-        # else : 
-        #     # to write 
         def rule(mod, t) : 
             return mod.Pcons(t) == sum(mod.on_off[k] for k in mod.t_set)*self.p_range[0]
         self.mod.pow_con = pyo.Constraint(self.mod.t_set, rule=rule)
@@ -405,11 +414,17 @@ class AoN(device) :
         self.mod.p_excess_l.fix(0)
         self.mod.p_excess_u.fix(0)
         return
-
-        
         
 class battery(device) : 
     def __init__(self, p_range, E_range, **kwargs) : 
+        """Battery device model, see the device class for the constraints
+        If E_range is None, then the energy will be a variable and the power too.
+        In this case, the C rate can be defined.
+
+        Args:
+            p_range (list or tuple): max and min power for the battery
+            E_range (list or tuple): min and max energy for the battery, put None if you want it to be a variable 
+        """
         total_time = kwargs.get("total_time", 24)
         self.total_time = total_time
         t_use = [[k, k+1] for k in range(total_time)]
@@ -417,7 +432,7 @@ class battery(device) :
         time_range = [[0, 0] for k in range(len(t_use))]
         super().__init__(power_range, t_use, time_range, **kwargs)
         if not E_range : 
-            self.capacity = pyo.Var(within=pyo.NonNegativeReals)
+            self.capacity = pyo.Var(initialize=0, within=pyo.NonNegativeReals)
             self.E_range = (kwargs.get('min_rate', 0.1 * self.capacity), kwargs.get('max_rate', 0.9 * self.capacity))
             self.mod.capacity = self.capacity
             p_range_rate = kwargs.get('p_range_rate', 0.5)
@@ -448,9 +463,17 @@ class battery(device) :
 
 class EV(device) : 
     def __init__(self, p_range, E_range, time_home, E0s, E_min, E_end, **kwargs) : 
-        # time_home = [[t0, tend] each time the EV is home]
-        # E_min = [Emin each time the EV needs to go (tend)]
-        # print("BONJOUR")
+        """EV device model, it works the same as the battery model but adding the fact that the EV is not always at home.
+
+        Args:
+            p_range (list or tuple): max and min power for the EV
+            E_range (list or tuple): min and max energy for the EV
+            time_home (list): list of time intervals when the EV is home
+            E0s (list): First value = value at the beginning of the simulation, 
+                then values of energy used while being away, that can be used to compute the next E0.
+            E_min (list): list of minimum energies for the EV before depart
+            E_end (list): list of final energies for the EV after coming back from the trip.
+        """
         total_time = kwargs.get("total_time", 24)
         t_use = [[k, k+1] for k in range(total_time)]
         power_range = [p_range for k in range(total_time)]

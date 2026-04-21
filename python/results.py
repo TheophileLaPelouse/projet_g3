@@ -3,10 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from time import time
 
 import sys
 sys.path.append("/Users/theophilemounier/Desktop/git/projet_g3/python")
-
+sys.path.append("/home/theophile/Desktop/git/projet_g3/python")
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 
@@ -39,6 +41,12 @@ for file in os.listdir(candidate_folder) :
         with open(os.path.join(candidate_folder, file), "r") as fp : 
             data = json.load(fp)
             devices = data["devices"]
+            
+            # if "PV" in devices : 
+            #     devices["PV"]["parameters"]["surface"] = None
+            # if "battery" in devices : 
+            #     devices["battery"]["parameters"]["E_range"] = None
+            
             parameters = data["parameters"]
             parameters["bat_exchange"] = True
             parameters["name"] = file[9:-5]
@@ -172,11 +180,11 @@ price_options = {
         "cost_grid_buy" : 0.0003, # €/wh
         "cost_grid_sell" : -0.00003,
         "cost_ex" : 0, 
-        "cost_PV" : 800, # € per m2
-        # "cost_PV" : 0, # per m2
+        # "cost_PV" : 800, # € per m2
+        "cost_PV" : 0, # per m2
         "PV_min" : 0,
-        "cost_bat" : 0.5, # € per wh
-        # "cost_bat" : 0, # per kwh
+        # "cost_bat" : 0.5, # € per wh
+        "cost_bat" : 0, # per kwh
         "bat_min" : 0,
     },
     "enviro" : {
@@ -194,27 +202,6 @@ price_options = {
 community = define_community(members, **param_commu, **price_options)
 # community.socio = [1, 1, 0, 1]
 community.optimize("gurobi")
-
-#%% Some temporary test
-# for member
-m = community.members[4]
-P_grid_plus = [pyo.value(m.mod_member.P_grid_plus[t]) for t in m.mod_member.time_index]
-P_grid_minus = [pyo.value(m.mod_member.P_grid_minus[t]) for t in m.mod_member.time_index]
-P_exchange = [pyo.value(m.P_exchange[t]) for t in m.mod_member.time_index]
-PV_surface = pyo.value(m.PV_surface)
-bat_cap = pyo.value(m.bat_cap)
-bat_pre = 1
-PV_pre = 1
-
-eco_args = {**price_options["eco"]}
-eco_args["deltat"] = m.deltat
-eco_args["total_time"] = m.total_time
-eco_args["ref"] = community.ref_values[0]
-
-tot = calc_eco_total(P_grid_plus, P_grid_minus, P_exchange, PV_surface, PV_pre, bat_cap, bat_pre, **eco_args)
-ope = calc_eco(P_grid_plus, P_grid_minus, P_exchange, **eco_args)
-invest = calc_invest_cost(PV_surface, PV_pre, bat_cap, bat_pre, **eco_args)
-
 
 #%%
 
@@ -272,7 +259,7 @@ values["Production"] = prod_values
 values["Battery capacity"] = bat_values
 values["Consumption"] = conso_values
 
-folder_path = os.path.join(home_path, "figs/gains_allocation")
+folder_path = os.path.join(home_path, "figs/gains_allocation_without_invest")
 if not os.path.exists(folder_path) :
     os.makedirs(folder_path)
 
@@ -418,9 +405,13 @@ for name, profile in profiles.items() :
     
 #%% Pareto front  computation
 
-weights = []
-for a1 in np.linspace(0,1,50):
-    for a2 in np.linspace(0,1-a1,50):
+
+n = 50
+# weights = [[0, 0, 0] for k in range(n)]
+# for k in range(n) : 
+weights = []    
+for a1 in np.linspace(0, 1, n) :
+    for a2 in np.linspace(0,1-a1,n):
         a3 = 1 - a1 - a2
         if a3 >= 0:
             weights.append((a1,a2,a3))
@@ -429,17 +420,27 @@ for a1 in np.linspace(0,1,50):
 price = []
 enviro = []
 comfort = []
-for a1, a2, a3 in weights :
+messages = []
+
+options = {
+    "MIPGap" : 1e-9, 
+    "FeasibilityTol" : 1e-9,
+    "OptimalityTol" : 1e-8, 
+    
+}
+
+for a1, a2, a3 in tqdm(weights) :
+# for a1, a2, a3 in weights :
     community.socio = [a1, a2, 0, a3]
     community.build_model(**community.kwargs)
-    community.optimize("gurobi")
+    messages.append(community.optimize("gurobi", options=options))
 
     price.append(pyo.value(community.mod.price))
     enviro.append(pyo.value(community.mod.enviro))
     comfort.append(pyo.value(community.mod.confort))
     
 import json 
-with open(os.path.join(home_path, "pareto_front.json"), "w") as fp :
+with open(os.path.join(home_path, "pareto_front_3D.json"), "w") as fp :
     json.dump({"price" : price, "enviro" : enviro, "comfort" : comfort}, fp)
 
 
@@ -498,3 +499,152 @@ plt.grid()
 plt.savefig(options["save_path"])
 
 
+#%% Evaluation of the complexity of the model with the number of members
+
+from commu_opti.data.generate_data import generate_n_profile, create_random_agent
+from commu_opti.commu_builder import define_members, define_community
+
+
+def test_complexity(n, test_calc_ref=False, calc_ref=True, calc_ref_commu=True) :
+    
+    t0 = time()
+    
+    print("generating data...")
+    profile = [[0, 8, 1], [8, 16, 0], [16, 24, 1], [24, 32, 1], [32, 40, 0], [40, 48, 1], [48, 56, 1], [56, 64, 0], [64, 72, 1]]
+    total_time = 72
+    profiles = generate_n_profile(n, profile, offset=2, lengths_rate=1.3, lengths_breaks_rate=0.3)
+    t1 = time()
+    print(f"data generated in {t1 - t0} seconds \n")
+
+    agents = []
+    for profile in profiles :
+        agent = create_random_agent(profile)
+        agents.append(agent)
+    
+    t2 = time()
+    print(f"agent created in {t2 - t1} seconds \n")
+
+    members_params = []
+    for i, agent in enumerate(agents) :
+        param = {"devices" : agent, "device_options" : {"total_time" : total_time, "deltat" : 1}, 
+                "parameters" : {
+                    "socio" : [1, 1, 0, 1],
+                    "id_" : i+1, 
+                    "bat_exchange" : False, 
+                    "total_time" : total_time,
+                }}
+        members_params.append(param)
+    members = define_members(members_params, calc_ref=False)
+    if test_calc_ref : 
+        for m in members : 
+            if not m.calc_ref_values(**m.kwargs) : 
+                print("Mauvaise ref")
+                return m
+    
+    t3 = time()
+    print(f"members defined in {t3 - t2} seconds \n")
+    
+    param_commu = {
+        "method" : "centralized",
+        "deltat" : 1,
+        "total_time" : total_time,
+        "calc_ref" : calc_ref, 
+        "ref_values" : [1, 1, 1, 1],
+    }
+
+    price_options = {
+        "eco" : {
+            "cost_grid_buy" : 0.0003, # €/wh
+            "cost_grid_sell" : -0.00003,
+            "cost_ex" : 0, 
+            "cost_PV" : 800, # € per m2
+            # "cost_PV" : 0, # per m2
+            "PV_min" : 0,
+            "cost_bat" : 0.5, # € per wh
+            # "cost_bat" : 0, # per kwh
+            "bat_min" : 0,
+        },
+        "enviro" : {
+            "carbone_grid" : 0.5,
+            "carbone_commu" : 0.1
+        },
+        "auto" : {
+            "coef_auto" : 1
+        },
+        "pena" : {
+            "coef_pena" : 1
+        }
+    }
+
+    print("defining community...")
+    t4 = time()
+    
+    community = define_community(members, **param_commu, **price_options)
+    t5 = time()
+    print(f"community defined in {t5 - t4} seconds \n")
+    print("optimizing community...")
+    t6 = time()
+    state = community.optimize("gurobi")
+    t7 = time()
+    print(f"community optimized in {t7 - t6} seconds \n")
+    print(f"total time for {n} members : {t7 - t0} seconds \n")
+    
+    return (t7 - t6, t7-t0, community, members_params, state)
+
+
+retur = test_complexity(100, calc_ref=False, calc_ref_commu = False)
+# c = 0
+# while isinstance(m, tuple) and c < 10000: 
+#     m = test_complexity(1, calc_ref=True)
+#     c+=1
+
+# if not isinstance(m, tuple) : 
+#     m.calc_ref_values(**m.kwargs, ref_lp=True, no_clear_ref=True)
+# t_opti, t_tot, commu, members_params, state = test_complexity(1)
+# c = 0
+# while str(state['Solver'][0]['Status']) != 'warning' and c < 200:
+#     t_opti, t_tot, commu, members_params, state = test_complexity(1)
+#     c += 1
+
+# #%% Plot complexity curve 
+
+# times_opti = []
+# times_total = []
+# states = []
+# commus = []
+# members_numbers = [k for k in range(1, 11)] + [k for k in range(15, 101, 2)]
+# ns = []
+
+# for n in tqdm(members_numbers) :
+#     try : 
+#         t_opti, t_tot, commu, members_params, state = test_complexity(n)
+#         times_opti.append(t_opti)
+#         times_total.append(t_tot)
+#         # commus.append(commu)
+#         states.append(state)
+#         ns.append(n)
+#     except : 
+#         continue
+    
+# #%%
+    
+# plt.figure()
+# plt.plot(ns, times_opti, '+', label="Optimization time", marker='+')
+# plt.title("Time for fully centralized optimization with Gurobi")
+# plt.xlabel("Number of members")
+# plt.ylabel("Time (seconds)")
+# plt.grid()
+# plt.legend()
+
+# plt.figure(2)
+# plt.plot(ns, times_total, '+', label="Total time")
+# plt.title("Total computation time")
+# plt.xlabel("Number of members")
+# plt.ylabel("Time (seconds)")
+# plt.grid()
+# plt.legend()
+
+# count = 0 
+# for val in states : 
+#     if str(val['Solver'][0]['Status']) == 'warning' : 
+#         count+=1
